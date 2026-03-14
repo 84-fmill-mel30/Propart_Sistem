@@ -1405,7 +1405,7 @@ async function conBLE_gatt(device){
 
       toast('🔍 Buscando servicios BLE...','info');
       // Pausa para que el stack BLE del teléfono se estabilice
-      await new Promise(r=>setTimeout(r,600));
+      await new Promise(r=>setTimeout(r,500));
 
       // Intentar servicios conocidos primero
       let sv=null; let realSVC='';
