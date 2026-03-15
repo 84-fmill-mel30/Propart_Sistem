@@ -1400,7 +1400,7 @@ async function conBLE_gatt(device){
 
       // Conectar con timeout manual de 8 segundos
       const gPromise=device.gatt.connect();
-      const gTimeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('GATT timeout')),8000));
+      const gTimeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('GATT timeout')),12000));
       const g=await Promise.race([gPromise,gTimeout]);
 
       toast('🔍 Buscando servicios BLE...','info');
