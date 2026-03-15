@@ -1405,7 +1405,7 @@ async function conBLE_gatt(device){
 
       toast('🔍 Buscando servicios BLE...','info');
       // Pausa para que el stack BLE del teléfono se estabilice
-      await new Promise(r=>setTimeout(r,500));
+      await new Promise(r=>setTimeout(r,900));
 
       // Intentar servicios conocidos primero
       let sv=null; let realSVC='';
@@ -1455,8 +1455,8 @@ async function conBLE_gatt(device){
       setBLEUI('on');
       toast((device.name||'OBD2')+' conectado ✅','ok');
 
-      // Esperar 1.5s antes del primer comando — el ELM327 necesita arrancar
-      setTimeout(()=>sendCmd(INIT[0]),1500);
+      // Esperar 2.0s antes del primer comando — el ELM327 necesita arrancar
+      setTimeout(()=>sendCmd(INIT[0]),2000);
       return; // éxito
 
     }catch(err){
@@ -1499,7 +1499,7 @@ function doInit(r){
     S.initMode=false;
     setOBD(true);
     toast('✅ OBD2 listo · ELM327 iniciado','ok');
-    setTimeout(iniciarPolling,800); // esperar 800ms antes de empezar polling
+    setTimeout(iniciarPolling,900); // esperar 800ms antes de empezar polling
   }
 }
 function doData(r){
@@ -1517,8 +1517,8 @@ function doData(r){
 let bleQueue=[];
 let bleBusy=false;
 let bleWaitingReply=false;
-const BLE_CMD_TIMEOUT=2200;  // ms máximo esperando respuesta
-const BLE_CMD_DELAY=150;     // ms entre comandos de la cola
+const BLE_CMD_TIMEOUT=2400;  // ms máximo esperando respuesta
+const BLE_CMD_DELAY=200;     // ms entre comandos de la cola
 let bleTimeoutId=null;
 
 function queueCmd(cmd){
@@ -2265,7 +2265,7 @@ const _selV_proto_orig = window.selV;
 window.selV = function(id){
   _selV_proto_orig(id);
   const v = VDB.find(x=>x.id===id);
-  if(v){ aplicarProtocoloPorMarca(v.marca); setTimeout(()=>renderCalByMarca(v), 300); }
+  if(v){ aplicarProtocoloPorMarca(v.marca); setTimeout(()=>renderCalByMarca(v), 500); }
 };
 
 
