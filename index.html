@@ -6,6 +6,49 @@
 <title>ProPart V7 — Diagnóstico PRO</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* El círculo flotante */
+.floating-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: #007bff; /* Azul ProPart */
+    color: white;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.4);
+    z-index: 2000; /* Siempre arriba de todo */
+    cursor: pointer;
+}
+
+/* La ventanita que se abre (El Pop-up) */
+.mini-chat-window {
+    display: none; /* Inicia escondida */
+    position: fixed;
+    bottom: 95px;
+    right: 25px;
+    width: 320px;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.3);
+    z-index: 2001;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+/* Encabezado del cuadrito */
+.chat-header {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
 :root{
   --bg0:#050A13;--bg1:#0A1422;--bg2:#0F1C32;--bg3:#162444;
   --bdr:#1E3058;--gold:#F5A623;--goldD:#B87010;--goldG:rgba(245,166,35,.15);
@@ -8456,6 +8499,18 @@ Object.values(FSM34_DATA).forEach(function(m){
 });
 console.log('[PROPART] FSM34 MODELO 100: BT-50/Ranger 2.2 | 16 pines | 3 DTCs');
 })();
+      <button class="floating-btn" onclick="toggleMiniChat()">🛠️</button>
+
+<div id="miniChat" class="mini-chat-window">
+    <div class="chat-header">
+        <span>Guía ProPart</span>
+        <button onclick="toggleMiniChat()" style="background:none; border:none; color:white; font-weight:bold;">X</button>
+    </div>
+    <div style="padding: 15px; color: black;">
+        <p><strong>Comentario:</strong></p>
+        <div id="guia-texto">Esperando código del motor...</div>
+    </div>
+</div>
 
 
 </script>
