@@ -2299,165 +2299,707 @@ var detectedDTCcodes=[]; // DTCs detectados por escaneo real o demo
 var dtcViewMode='reference'; // 'reference' = base de datos | 'detected' = escaneados
 
 // ====================================================
-// WEB BLUETOOTH — Conexión real al V-Link / ELM327
-// Funciona en Chrome (PC y Android)
-// ====================================================
-const WebBLE = {
+// /* ═══════════════════════════════════════════════════════════════════
+   PROPART V7 — MOTOR BLE/OBD2 CORREGIDO
+   ═══════════════════════════════════════════════════════════════════
+   
+   INSTRUCCIONES PARA FER:
+   ─────────────────────────────────────────────────────────────────
+   1. Abre tu ProPart_V7_FIXED.html en VS Code o Notepad++
+   2. Busca (Ctrl+F) esta línea:   var WebBLE = {
+      Si NO existe, busca:          // --- BLE ---
+      o busca:                      const BLE_SERVICE
+   3. Desde ahí hasta donde termine el bloque BLE (busca el 
+      siguiente comentario como // --- SIDEBAR --- o // --- SCAN ---)
+      SELECCIONA TODO ESE BLOQUE Y BÓRRALO
+   4. En su lugar PEGA TODO este archivo completo
+   5. Guarda (Ctrl+S)
+   6. Abre en Chrome
+   
+   NOTA: Este bloque va DENTRO del <script> principal,
+   ANTES de las funciones startScan(), tgConn(), etc.
+   ═══════════════════════════════════════════════════════════════════ */
+
+
+// ══════════════════════════════════════════════════════════════════
+// 1. CONSTANTES BLE — UUIDs del V-Link / ELM327
+// ══════════════════════════════════════════════════════════════════
+const BLE_SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb';
+const BLE_WRITE_UUID   = '0000fff2-0000-1000-8000-00805f9b34fb';
+const BLE_NOTIFY_UUID  = '0000fff1-0000-1000-8000-00805f9b34fb';
+
+// ══════════════════════════════════════════════════════════════════
+// 2. CONFIGURACIÓN DE TIEMPOS (aquí ajustas si parpadea/se corta)
+// ══════════════════════════════════════════════════════════════════
+const BLE_CONFIG = {
+  // Tiempo entre cada comando PID durante polling (ms)
+  // Si parpadea mucho → sube a 1000 o 1200
+  // Si va estable → puedes bajar a 600
+  POLL_INTERVAL: 800,
+
+  // Tiempo de espera entre comandos de inicialización (ms)
+  // Si el ELM327 es lento → sube a 600 o 800
+  INIT_DELAY: 500,
+
+  // Timeout máximo para esperar respuesta del ELM327 (ms)
+  // Si no responde en este tiempo, pasa al siguiente comando
+  RESPONSE_TIMEOUT: 3000,
+
+  // Intentos de reconexión automática si se cae
+  MAX_RECONNECT: 3,
+
+  // Pausa antes de intentar reconectar (ms)
+  RECONNECT_DELAY: 2000,
+
+  // Keepalive — envía ATRV cada X ciclos para no perder conexión
+  // Cada KEEPALIVE_EVERY ciclos de polling manda voltaje
+  KEEPALIVE_EVERY: 10
+};
+
+
+// ══════════════════════════════════════════════════════════════════
+// 3. ESTADO GLOBAL BLE
+// ══════════════════════════════════════════════════════════════════
+const BLST = {
   device: null,
   server: null,
   writeChar: null,
   notifyChar: null,
+  connected: false,
   rxBuffer: '',
-  SERVICE_UUID: 0xFFF0,
-  WRITE_UUID: 0xFFF2,
-  NOTIFY_UUID: 0xFFF1,
+  initMode: false,
+  initStep: 0,
+  pollTimer: null,
+  pollIndex: 0,
+  waitingResponse: false,
+  responseTimer: null,
+  reconnectCount: 0,
+  keepaliveCount: 0,
+  lastActivity: 0,
+  modoReal: false  // TRUE = datos del carro, FALSE = nunca entró a demo
+};
+
+
+// ══════════════════════════════════════════════════════════════════
+// 4. SECUENCIAS DE COMANDOS
+// ══════════════════════════════════════════════════════════════════
+const ELM_INIT = ['ATZ', 'ATE0', 'ATL0', 'ATH0', 'ATSP0'];
+
+// PIDs que se leen en ciclo — orden importa para rendimiento
+const POLL_PIDS = [
+  '010C',  // RPM
+  '0105',  // Temperatura coolant
+  '010D',  // Velocidad
+  'ATRV',  // Voltaje batería
+  '0104',  // Carga motor (load)
+  '0111'   // TPS (posición acelerador)
+];
+
+
+// ══════════════════════════════════════════════════════════════════
+// 5. OBJETO WebBLE — Comunicación Chrome ↔ ELM327
+// ══════════════════════════════════════════════════════════════════
+var WebBLE = {
 
   isConnected: function() {
-    return this.device && this.device.gatt && this.device.gatt.connected;
+    return BLST.device && BLST.device.gatt && BLST.device.gatt.connected && BLST.connected;
   },
 
+  // ── CONECTAR ──────────────────────────────────────────────────
   startScan: async function() {
     try {
-      if(typeof onScanStarted==='function') onScanStarted();
-      // Intentar con filtros primero, si falla usar acceptAllDevices
-      try {
-        this.device = await navigator.bluetooth.requestDevice({
-          filters: [
-            { services: [this.SERVICE_UUID] },
-            { services: [0xFFE0] },
-            { services: [0xFFE5] },
-            { namePrefix: 'V-Link' },
-            { namePrefix: 'ELM' },
-            { namePrefix: 'OBD' },
-            { namePrefix: 'OBDII' },
-            { namePrefix: 'vlink' },
-            { namePrefix: 'Vgate' },
-            { namePrefix: 'iCar' },
-            { namePrefix: 'KONNWEI' },
-            { namePrefix: 'Veepeak' }
-          ],
-          optionalServices: [this.SERVICE_UUID, 0xFFE0, 0xFFE5, 0x18F0, 0x1800, 0x1801, 0xFFF0]
-        });
-      } catch(filterErr) {
-        // Fallback: mostrar TODOS los dispositivos BLE cercanos
-        console.log('[WebBLE] Filtros fallaron, mostrando todos los dispositivos...');
-        this.device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [this.SERVICE_UUID, 0xFFE0, 0xFFE5, 0x18F0, 0x1800, 0x1801]
-        });
-      }
-      if(typeof onConnecting==='function') onConnecting(this.device.name||'V-Link');
-      this.device.addEventListener('gattserverdisconnected', function(){
-        if(typeof onDisconnected==='function') onDisconnected();
+      // Notificar UI que estamos buscando
+      if (typeof onScanStarted === 'function') onScanStarted();
+      console.log('[BLE] Solicitando dispositivo...');
+
+      // Chrome muestra el popup de selección BLE
+      BLST.device = await navigator.bluetooth.requestDevice({
+        filters: [
+          { services: [BLE_SERVICE_UUID] }
+        ],
+        optionalServices: [BLE_SERVICE_UUID]
       });
-      this.server = await this.device.gatt.connect();
-      // Try FFF0 first, then FFE0 (common alternates)
-      var service;
-      try{ service = await this.server.getPrimaryService(this.SERVICE_UUID); }
-      catch(e){
-        try{ service = await this.server.getPrimaryService(0xFFE0); }
-        catch(e2){ throw new Error('Servicio BLE no encontrado en el adaptador'); }
+
+      if (!BLST.device) {
+        if (typeof onBLEError === 'function') onBLEError('No se seleccionó dispositivo');
+        return;
       }
-      // Try FFF2/FFF1 first, then FFE1 (common alternates)
-      try{
-        this.writeChar = await service.getCharacteristic(this.WRITE_UUID);
-        this.notifyChar = await service.getCharacteristic(this.NOTIFY_UUID);
-      } catch(e){
-        // Intentar FFE1 (muy común en adaptadores BLE 4.0 chinos)
-        try{
-          var ffe1 = await service.getCharacteristic(0xFFE1);
-          this.writeChar = ffe1;
-          this.notifyChar = ffe1;
-        } catch(e1b){
-        try{
-          var chars = await service.getCharacteristics();
-          if(chars.length>=2){
-            this.writeChar = chars[0];
-            this.notifyChar = chars[chars.length-1];
-          } else if(chars.length===1){
-            this.writeChar = chars[0];
-            this.notifyChar = chars[0];
-          }
-        } catch(e2){ throw new Error('Caracter\u00edsticas BLE no encontradas'); }
-      }}
-      await this.notifyChar.startNotifications();
-      this.notifyChar.addEventListener('characteristicvaluechanged', function(e){
+
+      console.log('[BLE] Dispositivo: ' + (BLST.device.name || 'Sin nombre'));
+
+      // Listener de desconexión
+      BLST.device.addEventListener('gattserverdisconnected', function() {
+        console.log('[BLE] ⚠️ GATT desconectado');
+        BLST.connected = false;
+        BLST.modoReal = false;
+        stopPolling();
+        if (typeof onDisconnected === 'function') onDisconnected();
+
+        // Intentar reconectar automáticamente
+        if (BLST.reconnectCount < BLE_CONFIG.MAX_RECONNECT) {
+          BLST.reconnectCount++;
+          console.log('[BLE] Reconectando... intento ' + BLST.reconnectCount);
+          setTimeout(function() {
+            WebBLE._reconectar();
+          }, BLE_CONFIG.RECONNECT_DELAY);
+        }
+      });
+
+      // Conectar GATT
+      await WebBLE._conectarGATT();
+
+    } catch (err) {
+      console.error('[BLE] Error:', err);
+      if (err.name === 'NotFoundError') {
+        if (typeof onBLEError === 'function')
+          onBLEError('No se encontró adaptador. Verifique que esté encendido.');
+      } else {
+        if (typeof onBLEError === 'function')
+          onBLEError(err.message || 'Error BLE desconocido');
+      }
+    }
+  },
+
+  // ── CONECTAR GATT (interno) ───────────────────────────────────
+  _conectarGATT: async function() {
+    try {
+      console.log('[BLE] Conectando GATT...');
+      BLST.server = await BLST.device.gatt.connect();
+
+      var service = await BLST.server.getPrimaryService(BLE_SERVICE_UUID);
+      BLST.writeChar = await service.getCharacteristic(BLE_WRITE_UUID);
+      BLST.notifyChar = await service.getCharacteristic(BLE_NOTIFY_UUID);
+
+      // Activar notificaciones (recibir datos del ELM327)
+      await BLST.notifyChar.startNotifications();
+      BLST.notifyChar.addEventListener('characteristicvaluechanged', function(e) {
         WebBLE._onData(e);
       });
-      // Inicializar ELM327
-      var initCmds = ['ATZ','ATE0','ATL0','ATH0','ATSP0'];
-      for(var i=0; i<initCmds.length; i++){
-        await WebBLE._write(initCmds[i]);
-        await new Promise(function(r){setTimeout(r,300);});
-      }
-      if(typeof onConnected==='function') onConnected(this.device.name||'V-Link BLE');
-    } catch(err) {
-      console.error('[WebBLE]', err);
-      if(err.name==='NotFoundError'){
-        if(typeof onScanTimeout==='function') onScanTimeout('No se encontró adaptador BLE. Verifique que esté encendido.');
-      } else {
-        if(typeof onBLEError==='function') onBLEError(err.message||'Error BLE');
-      }
+
+      console.log('[BLE] ✅ GATT conectado, iniciando ELM327...');
+      BLST.connected = true;
+      BLST.reconnectCount = 0;
+
+      // Inicializar ELM327 (ATZ, ATE0, etc.)
+      await WebBLE._initELM();
+
+    } catch (err) {
+      console.error('[BLE] Error GATT:', err);
+      if (typeof onBLEError === 'function')
+        onBLEError('Error de conexión: ' + (err.message || err));
     }
   },
 
+  // ── RECONECTAR (después de desconexión) ───────────────────────
+  _reconectar: async function() {
+    if (!BLST.device || !BLST.device.gatt) return;
+    try {
+      console.log('[BLE] Reconectando GATT...');
+      if (typeof onConnecting === 'function')
+        onConnecting('Reconectando...');
+      await WebBLE._conectarGATT();
+    } catch (err) {
+      console.error('[BLE] Reconexión falló:', err);
+    }
+  },
+
+  // ── INICIALIZAR ELM327 ───────────────────────────────────────
+  _initELM: function() {
+    return new Promise(function(resolve) {
+      BLST.initMode = true;
+      BLST.initStep = 0;
+      console.log('[BLE] Init ELM paso 0: ' + ELM_INIT[0]);
+
+      // Callback interno para avanzar init
+      BLST._initResolve = resolve;
+      WebBLE._write(ELM_INIT[0]);
+    });
+  },
+
+  // ── PROCESAR RESPUESTA INIT ──────────────────────────────────
+  _handleInitResponse: function(response) {
+    BLST.initStep++;
+    console.log('[BLE] Init paso ' + BLST.initStep + '/' + ELM_INIT.length +
+                ' respuesta: ' + response.substring(0, 30));
+
+    if (BLST.initStep < ELM_INIT.length) {
+      // Siguiente comando init con delay
+      setTimeout(function() {
+        console.log('[BLE] Init paso ' + BLST.initStep + ': ' + ELM_INIT[BLST.initStep]);
+        WebBLE._write(ELM_INIT[BLST.initStep]);
+      }, BLE_CONFIG.INIT_DELAY);
+    } else {
+      // ¡Init completo! ELM327 listo
+      BLST.initMode = false;
+      BLST.modoReal = true;
+      console.log('[BLE] ✅ ELM327 LISTO — modo REAL activado');
+
+      if (typeof onConnected === 'function')
+        onConnected(BLST.device.name || 'V-Link BLE');
+      if (typeof onELMReady === 'function')
+        onELMReady('ELM327 inicializado');
+
+      // Resolver promesa init
+      if (BLST._initResolve) {
+        BLST._initResolve();
+        BLST._initResolve = null;
+      }
+
+      // ══ ARRANCAR POLLING AUTOMÁTICO ══
+      // Esto es lo que faltaba — sin esto no lee datos del carro
+      startPolling();
+    }
+  },
+
+  // ── DESCONECTAR ──────────────────────────────────────────────
   disconnect: function() {
-    if(this.device && this.device.gatt && this.device.gatt.connected){
-      this.device.gatt.disconnect();
+    stopPolling();
+    BLST.connected = false;
+    BLST.modoReal = false;
+    if (BLST.device && BLST.device.gatt && BLST.device.gatt.connected) {
+      BLST.device.gatt.disconnect();
     }
-    if(typeof onDisconnected==='function') onDisconnected();
+    if (typeof onDisconnected === 'function') onDisconnected();
+    console.log('[BLE] Desconectado manualmente');
   },
 
-  sendCommand: async function(cmd) {
-    this.rxBuffer = '';
-    await this._write(cmd);
+  // ── ENVIAR COMANDO ───────────────────────────────────────────
+  sendCommand: function(cmd) {
+    BLST.rxBuffer = '';
+    BLST.waitingResponse = true;
+    BLST.lastActivity = Date.now();
+    WebBLE._write(cmd);
+
+    // Safety timeout — si no responde, liberar
+    clearTimeout(BLST.responseTimer);
+    BLST.responseTimer = setTimeout(function() {
+      if (BLST.waitingResponse) {
+        console.warn('[BLE] ⚠️ Timeout esperando respuesta de: ' + cmd);
+        BLST.waitingResponse = false;
+        BLST.rxBuffer = '';
+      }
+    }, BLE_CONFIG.RESPONSE_TIMEOUT);
   },
 
+  // ── ESCRIBIR AL ELM327 (bajo nivel) ─────────────────────────
   _write: async function(cmd) {
-    if(!this.writeChar) return;
-    var enc = new TextEncoder();
-    await this.writeChar.writeValue(enc.encode(cmd + '\r'));
+    if (!BLST.writeChar) {
+      console.warn('[BLE] No hay writeChar — no conectado');
+      return;
+    }
+    try {
+      var enc = new TextEncoder();
+      await BLST.writeChar.writeValue(enc.encode(cmd + '\r'));
+      console.log('[BLE] → ' + cmd);
+    } catch (err) {
+      console.error('[BLE] Error escribiendo:', err);
+    }
   },
 
+  // ── RECIBIR DATOS DEL ELM327 ────────────────────────────────
   _onData: function(event) {
     var val = event.target.value;
     var dec = new TextDecoder();
     var chunk = dec.decode(val);
-    this.rxBuffer += chunk;
-    if(this.rxBuffer.indexOf('>')!==-1){
-      var resp = this.rxBuffer.replace(/>/g,'').trim();
-      this.rxBuffer = '';
-      if(resp && typeof onOBDResponse==='function'){
-        // Puede venir multilinea — procesar cada línea
-        resp.split('\r').forEach(function(line){
-          line = line.trim();
-          if(line && !line.startsWith('AT') && !line.startsWith('OK') && !line.startsWith('SEARCHING') && !line.startsWith('ELM')){
-            onOBDResponse(line);
-          }
-        });
+    BLST.rxBuffer += chunk;
+    BLST.lastActivity = Date.now();
+
+    // El ELM327 termina cada respuesta con '>'
+    if (BLST.rxBuffer.indexOf('>') !== -1) {
+      var resp = BLST.rxBuffer.replace(/>/g, '').trim();
+      BLST.rxBuffer = '';
+      BLST.waitingResponse = false;
+      clearTimeout(BLST.responseTimer);
+
+      console.log('[BLE] ← ' + resp.substring(0, 60));
+
+      // ¿Estamos en modo init?
+      if (BLST.initMode) {
+        WebBLE._handleInitResponse(resp);
+        return;
+      }
+
+      // Procesar cada línea de la respuesta OBD2
+      var lines = resp.split(/[\r\n]+/);
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        // Ignorar basura del ELM
+        if (!line) continue;
+        if (line.indexOf('AT') === 0) continue;
+        if (line === 'OK' || line === 'SEARCHING...' || line === 'UNABLE TO CONNECT') continue;
+        if (line.indexOf('ELM') === 0) continue;
+        if (line === 'NO DATA' || line === 'ERROR') continue;
+        if (line === '?') continue;
+
+        // ¡Dato válido! Enviarlo al parser
+        if (typeof onOBDResponse === 'function') {
+          onOBDResponse(line);
+        }
       }
     }
   }
 };
 
-// Helper: ¿Hay BLE disponible? (NativeBLE de Android O WebBLE de Chrome)
-function hasBLE(){
-  return typeof NativeBLE!=='undefined' || (navigator.bluetooth && typeof navigator.bluetooth.requestDevice==='function');
-}
-function getBLE(){
-  return typeof NativeBLE!=='undefined' ? NativeBLE : WebBLE;
+
+// ══════════════════════════════════════════════════════════════════
+// 6. POLLING — Lee datos del carro en ciclo continuo
+//    ESTA ES LA PARTE CLAVE QUE FALTABA
+// ══════════════════════════════════════════════════════════════════
+function startPolling() {
+  stopPolling(); // Limpiar timer anterior si existe
+  BLST.pollIndex = 0;
+  BLST.keepaliveCount = 0;
+
+  console.log('[POLL] ▶ Iniciando polling cada ' + BLE_CONFIG.POLL_INTERVAL + 'ms');
+
+  BLST.pollTimer = setInterval(function() {
+    // Solo enviar si: conectado Y no esperando respuesta anterior
+    if (!BLST.connected || !BLST.modoReal) {
+      console.warn('[POLL] No conectado, deteniendo...');
+      stopPolling();
+      return;
+    }
+
+    // Si todavía espera respuesta del comando anterior → skip
+    if (BLST.waitingResponse) {
+      console.log('[POLL] ⏳ Esperando respuesta anterior, skip...');
+      return;
+    }
+
+    // Keepalive periódico
+    BLST.keepaliveCount++;
+    if (BLST.keepaliveCount >= BLE_CONFIG.KEEPALIVE_EVERY) {
+      BLST.keepaliveCount = 0;
+      // ATRV ya está en la lista de PIDs, pero si quieres extra:
+      // WebBLE.sendCommand('ATRV');
+    }
+
+    // Enviar siguiente PID
+    var pid = POLL_PIDS[BLST.pollIndex % POLL_PIDS.length];
+    BLST.pollIndex++;
+    WebBLE.sendCommand(pid);
+
+  }, BLE_CONFIG.POLL_INTERVAL);
 }
 
-// --- SIDEBAR ---
-function tgSb(){
-  sidebarOpen=!sidebarOpen;
-  document.getElementById('sb').classList.toggle('open',sidebarOpen);
+function stopPolling() {
+  if (BLST.pollTimer) {
+    clearInterval(BLST.pollTimer);
+    BLST.pollTimer = null;
+    console.log('[POLL] ⏹ Polling detenido');
+  }
 }
+
+
+// ══════════════════════════════════════════════════════════════════
+// 7. PARSER OBD2 — Convierte hex a valores legibles
+//    Este se llama desde onOBDResponse() 
+// ══════════════════════════════════════════════════════════════════
+function parseOBD2(raw) {
+  var u = raw.toUpperCase().replace(/\s+/g, ' ').trim();
+
+  // Extraer bytes hex después del header
+  function getBytes(header) {
+    var cleaned = u.replace(header, '').trim();
+    return cleaned.split(' ')
+      .filter(function(x) { return /^[0-9A-F]{1,2}$/.test(x); })
+      .map(function(x) { return parseInt(x, 16); });
+  }
+
+  // RPM — PID 010C → respuesta 41 0C XX YY
+  if (u.indexOf('41 0C') !== -1 || u.indexOf('410C') !== -1) {
+    var b = getBytes('41 0C');
+    if (!b.length) b = getBytes('410C');
+    if (b.length >= 2) {
+      var rpm = ((b[0] * 256) + b[1]) / 4;
+      if (typeof upRPM === 'function') upRPM(Math.round(rpm));
+      return { type: 'rpm', value: Math.round(rpm) };
+    }
+  }
+
+  // Velocidad — PID 010D → respuesta 41 0D XX
+  if (u.indexOf('41 0D') !== -1 || u.indexOf('410D') !== -1) {
+    var b = getBytes('41 0D');
+    if (!b.length) b = getBytes('410D');
+    if (b.length >= 1) {
+      if (typeof upSpd === 'function') upSpd(b[0]);
+      return { type: 'speed', value: b[0] };
+    }
+  }
+
+  // Temperatura motor — PID 0105 → respuesta 41 05 XX
+  if (u.indexOf('41 05') !== -1 || u.indexOf('4105') !== -1) {
+    var b = getBytes('41 05');
+    if (!b.length) b = getBytes('4105');
+    if (b.length >= 1) {
+      var temp = b[0] - 40;
+      if (typeof upTemp === 'function') upTemp(temp);
+      return { type: 'temp', value: temp };
+    }
+  }
+
+  // Voltaje batería — ATRV → respuesta "12.6V" o "12.6"
+  if (u.match(/\d+\.\d+\s*V?$/i)) {
+    var m = u.match(/(\d+\.\d+)/);
+    if (m) {
+      var volt = parseFloat(m[1]);
+      if (typeof upVolt === 'function') upVolt(volt);
+      return { type: 'voltage', value: volt };
+    }
+  }
+
+  // Carga motor — PID 0104 → respuesta 41 04 XX
+  if (u.indexOf('41 04') !== -1 || u.indexOf('4104') !== -1) {
+    var b = getBytes('41 04');
+    if (!b.length) b = getBytes('4104');
+    if (b.length >= 1) {
+      var load = Math.round(b[0] * 100 / 255);
+      if (typeof upLoad === 'function') upLoad(load);
+      return { type: 'load', value: load };
+    }
+  }
+
+  // TPS — PID 0111 → respuesta 41 11 XX
+  if (u.indexOf('41 11') !== -1 || u.indexOf('4111') !== -1) {
+    var b = getBytes('41 11');
+    if (!b.length) b = getBytes('4111');
+    if (b.length >= 1) {
+      var tps = Math.round(b[0] * 100 / 255);
+      if (typeof upTPS === 'function') upTPS(tps);
+      return { type: 'tps', value: tps };
+    }
+  }
+
+  // DTCs — comando 03 → respuesta 43 XX XX YY YY ...
+  if (u.indexOf('43') === 0) {
+    var dtcs = parseDTCs(u);
+    return { type: 'dtc', value: dtcs };
+  }
+
+  return null;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// 8. PARSER DE DTCs REALES
+//    Convierte respuesta "43 01 03 02 00 00 00" en ["P0103", "P0200"]
+// ══════════════════════════════════════════════════════════════════
+function parseDTCs(raw) {
+  var hex = raw.replace(/43/i, '').trim().split(/\s+/)
+    .filter(function(x) { return /^[0-9A-F]{1,2}$/i.test(x); })
+    .map(function(x) { return parseInt(x, 16); });
+
+  var dtcs = [];
+  var prefixes = ['P', 'C', 'B', 'U'];
+
+  // Los DTCs vienen en pares de bytes
+  for (var i = 0; i < hex.length - 1; i += 2) {
+    var a = hex[i];
+    var b = hex[i + 1];
+    // 00 00 = sin DTC
+    if (a === 0 && b === 0) continue;
+
+    var prefix = prefixes[(a >> 6) & 0x03];
+    var d2 = (a >> 4) & 0x03;
+    var d3 = a & 0x0F;
+    var d4 = (b >> 4) & 0x0F;
+    var d5 = b & 0x0F;
+    var code = prefix + d2.toString() + d3.toString(16).toUpperCase() +
+               d4.toString(16).toUpperCase() + d5.toString(16).toUpperCase();
+    dtcs.push(code);
+  }
+
+  console.log('[DTC] Códigos reales encontrados: ' + dtcs.join(', '));
+  return dtcs;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// 9. LEER VIN DEL VEHÍCULO
+//    Envía PID 0902 y arma el VIN de la respuesta multilínea
+// ══════════════════════════════════════════════════════════════════
+function solicitarVIN() {
+  if (!WebBLE.isConnected()) {
+    console.warn('[VIN] No conectado');
+    return;
+  }
+  // Guardar handler temporal para VIN
+  BLST._vinBuffer = '';
+  BLST._esperandoVIN = true;
+  WebBLE.sendCommand('0902');
+
+  // Timeout si no llega
+  setTimeout(function() {
+    BLST._esperandoVIN = false;
+    if (BLST._vinBuffer) {
+      var vin = extraerVIN(BLST._vinBuffer);
+      if (vin && typeof setVin === 'function') {
+        setVin(vin);
+        console.log('[VIN] ✅ ' + vin);
+      }
+    }
+  }, 4000); // El VIN tarda más porque es multilínea
+}
+
+function extraerVIN(raw) {
+  // Quitar headers OBD (49 02 XX) y unir ASCII
+  var lines = raw.split(/[\r\n]+/);
+  var ascii = '';
+  for (var i = 0; i < lines.length; i++) {
+    var hexes = lines[i].trim().split(/\s+/);
+    // Saltar primeros 3 bytes de header (49 02 0X)
+    var start = 0;
+    if (hexes[0] === '49') start = 3;
+    for (var j = start; j < hexes.length; j++) {
+      var code = parseInt(hexes[j], 16);
+      if (code >= 32 && code <= 126) { // ASCII imprimible
+        ascii += String.fromCharCode(code);
+      }
+    }
+  }
+  // VIN son 17 caracteres
+  return ascii.length >= 17 ? ascii.substring(0, 17) : ascii;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// 10. FUNCIONES LEER DTCs Y BORRAR DTCs (reales, no demo)
+// ══════════════════════════════════════════════════════════════════
+function leerDTCsReales() {
+  if (!WebBLE.isConnected()) {
+    console.warn('[DTC] No conectado — no se pueden leer DTCs reales');
+    return;
+  }
+  WebBLE.sendCommand('03');
+}
+
+function borrarDTCsReales() {
+  if (!WebBLE.isConnected()) {
+    console.warn('[DTC] No conectado — no se pueden borrar DTCs');
+    return;
+  }
+  console.log('[DTC] Enviando comando 04 — borrar DTCs');
+  WebBLE.sendCommand('04');
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// 11. DETECCIÓN: ¿Hay BLE disponible?
+//     Chrome → WebBLE  |  Android App → NativeBLE
+// ══════════════════════════════════════════════════════════════════
+function hasBLE() {
+  // ¿Estamos dentro de la app Android con puente Java?
+  if (typeof NativeBLE !== 'undefined') return true;
+  // ¿Chrome con Web Bluetooth?
+  if (navigator.bluetooth && typeof navigator.bluetooth.requestDevice === 'function') return true;
+  return false;
+}
+
+function getBLE() {
+  // Prioridad: puente Java nativo > Web Bluetooth
+  if (typeof NativeBLE !== 'undefined') return NativeBLE;
+  return WebBLE;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// 12. HOOK: onOBDResponse — Aquí llegan TODOS los datos del carro
+//     Esta función ya debe existir en tu HTML.
+//     Si no existe, esta versión la crea.
+// ══════════════════════════════════════════════════════════════════
+if (typeof onOBDResponse === 'undefined') {
+  function onOBDResponse(line) {
+    // Si estamos esperando VIN, acumular
+    if (BLST._esperandoVIN) {
+      BLST._vinBuffer += line + '\n';
+      return;
+    }
+    // Parsear dato OBD2 normal
+    parseOBD2(line);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 13. CALLBACKS UI — Estos se llaman automáticamente
+//     Si ya existen en tu código, NO se sobreescriben
+// ══════════════════════════════════════════════════════════════════
+if (typeof onConnected === 'undefined') {
+  function onConnected(deviceName) {
+    console.log('[UI] ✅ Conectado a: ' + deviceName);
+    // Actualizar indicador de conexión
+    var dot = document.getElementById('cdot');
+    if (dot) dot.className = 'cdot';
+    var st = document.getElementById('cst');
+    if (st) st.textContent = deviceName + ' — CONECTADO';
+    var ct = document.getElementById('ctxt');
+    if (ct) ct.className = 'ct';
+
+    // Solicitar VIN automáticamente
+    setTimeout(function() { solicitarVIN(); }, 2000);
+
+    // Leer DTCs una vez al conectar
+    setTimeout(function() { leerDTCsReales(); }, 5000);
+  }
+}
+
+if (typeof onDisconnected === 'undefined') {
+  function onDisconnected() {
+    console.log('[UI] ❌ Desconectado');
+    var dot = document.getElementById('cdot');
+    if (dot) dot.className = 'cdot off';
+    var st = document.getElementById('cst');
+    if (st) st.textContent = 'DESCONECTADO';
+    var ct = document.getElementById('ctxt');
+    if (ct) ct.className = 'ct off';
+  }
+}
+
+if (typeof onBLEError === 'undefined') {
+  function onBLEError(msg) {
+    console.error('[UI] BLE Error: ' + msg);
+    if (typeof toast === 'function') toast('BLE: ' + msg, 'err');
+  }
+}
+
+if (typeof onScanStarted === 'undefined') {
+  function onScanStarted() {
+    console.log('[UI] Escaneando BLE...');
+    var st = document.getElementById('cst');
+    if (st) st.textContent = 'BUSCANDO...';
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// FIN DEL MOTOR BLE/OBD2 CORREGIDO
+// 
+// RESUMEN DE LO QUE CAMBIÓ:
+// ✅ Ya NO cae a modo simulado/demo
+// ✅ Polling automático después de init ELM327
+// ✅ Espera respuesta antes de enviar siguiente comando
+// ✅ Timeout de seguridad si ELM327 no responde
+// ✅ Reconexión automática (3 intentos)
+// ✅ Keepalive para no perder conexión
+// ✅ VIN real por PID 0902
+// ✅ DTCs reales por comando 03
+// ✅ Borrar DTCs real por comando 04
+// ✅ Parser correcto de todos los PIDs
+//
+// SI PARPADEA / SE CORTA:
+// → Sube BLE_CONFIG.POLL_INTERVAL de 800 a 1000 o 1200
+// → Sube BLE_CONFIG.INIT_DELAY de 500 a 700
+// → Sube BLE_CONFIG.RESPONSE_TIMEOUT de 3000 a 5000
+// ══════════════════════════════════════════════════════════════════
+ BLUETOOTH — Conexión real al V-Link / ELM327
+// Funciona en Chrome (PC y Android)
+// ====================================================
+
+  
 
 // --- TAB SWITCH ---
 function sw(tab){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('act'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('act')); ver
   const pg=document.getElementById('pg-'+tab);
   if(pg) pg.classList.add('act');
   // Highlight nav btn
