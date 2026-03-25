@@ -2298,28 +2298,32 @@ let currentPin='all';
 var detectedDTCcodes=[]; // DTCs detectados por escaneo real o demo
 var dtcViewMode='reference'; // 'reference' = base de datos | 'detected' = escaneados
 
-// ====================================================
-// /* ═══════════════════════════════════════════════════════════════════
-   PROPART V7 — MOTOR BLE/OBD2 CORREGIDO
-   ═══════════════════════════════════════════════════════════════════
-   
-   INSTRUCCIONES PARA FER:
-   ─────────────────────────────────────────────────────────────────
-   1. Abre tu ProPart_V7_FIXED.html en VS Code o Notepad++
-   2. Busca (Ctrl+F) esta línea:   var WebBLE = {
-      Si NO existe, busca:          // --- BLE ---
-      o busca:                      const BLE_SERVICE
-   3. Desde ahí hasta donde termine el bloque BLE (busca el 
-      siguiente comentario como // --- SIDEBAR --- o // --- SCAN ---)
-      SELECCIONA TODO ESE BLOQUE Y BÓRRALO
-   4. En su lugar PEGA TODO este archivo completo
-   5. Guarda (Ctrl+S)
-   6. Abre en Chrome
-   
-   NOTA: Este bloque va DENTRO del <script> principal,
-   ANTES de las funciones startScan(), tgConn(), etc.
-   ═══════════════════════════════════════════════════════════════════ */
+  const WebBLE = {
+  device: null,
+  server: null,
+  writeChar: null,
+  notifyChar: null,
+  rxBuffer: '',
+  SERVICE_UUID: 0xFFF0,
+  WRITE_UUID: 0xFFF2,
+  NOTIFY_UUID: 0xFFF1,
 
+  isConnected: function() {
+    return this.device && this.device.gatt && this.device.gatt.connected;
+  },
+
+  startScan: async function() {
+    try {
+      if(typeof onScanStarted==='function') onScanStarted();
+      this.device = await navigator.bluetooth.requestDevice({
+        filters: [
+          { services: [this.SERVICE_UUID] },
+          { services: [0xFFE0] },
+          { namePrefix: 'V-Link' },
+          { namePrefix: 'ELM' },
+          { namePrefix: 'OBD' },
+          { namePrefix: 'OBDII' }
+        ],
 
 // ══════════════════════════════════════════════════════════════════
 // 1. CONSTANTES BLE — UUIDs del V-Link / ELM327
