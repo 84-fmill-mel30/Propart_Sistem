@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>DATESEG MX — Sistema de Tecnologías Automotrices</title>
+<meta name="description" content="DATESEG MX — Diagnóstico automotriz profesional, seguridad vial, programación de ECU y herramientas para talleres en México">
+<meta name="theme-color" content="#050A12">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050A12;--bg1:#0A1422;--bg2:#0F1C32;--bg3:#162444;
+  --bdr:#1E3058;--gold:#F5A623;--cyan:#00D4FF;--green:#00E676;
+  --red:#FF3D5A;--purple:#9C59F7;--orange:#FF7043;--diesel:#FF8C00;
+  --txt:#D0E4F5;--txtD:#6880A0;--txtM:#344870;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ═══ PARTICLES BG ═══ */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;border-radius:50%;opacity:.3;animation:float linear infinite}
+@keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.3}90%{opacity:.3}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+
+/* ═══ HEADER ═══ */
+.header{text-align:center;padding:50px 20px 30px;position:relative;z-index:1}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan),var(--purple),var(--gold));background-size:300%;animation:bar 4s linear infinite}
+@keyframes bar{to{background-position:-300% 0}}
+.logo-hex{font-size:56px;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(245,166,35,.4));animation:logoPulse 3s ease infinite}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(245,166,35,.4))}50%{filter:drop-shadow(0 0 35px rgba(245,166,35,.7))}}
+.header h1{font-family:'Rajdhani',sans-serif;font-size:clamp(30px,6vw,48px);font-weight:700;letter-spacing:6px;background:linear-gradient(135deg,var(--gold),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
+.header .sub{font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--txtD);letter-spacing:4px;margin-top:4px;text-transform:uppercase}
+.header .tagline{font-size:13px;color:var(--txt);margin-top:14px;max-width:550px;margin-left:auto;margin-right:auto;line-height:1.7;opacity:.85}
+
+/* ═══ NAV TABS ═══ */
+.nav{display:flex;justify-content:center;gap:6px;padding:0 16px;margin-bottom:20px;flex-wrap:wrap;position:relative;z-index:1}
+.nav-btn{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:8px 16px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg1);color:var(--txtD);cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav-btn:hover{border-color:var(--gold);color:var(--txt)}
+.nav-btn.act{background:linear-gradient(135deg,rgba(245,166,35,.15),rgba(245,166,35,.05));border-color:var(--gold);color:var(--gold)}
+
+/* ═══ SECTIONS ═══ */
+.section{max-width:1000px;margin:0 auto;padding:10px 16px 30px;position:relative;z-index:1}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-desc{font-size:11px;color:var(--txtD);margin-bottom:16px;line-height:1.6}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--bdr),transparent);margin:10px auto 20px;max-width:600px}
+
+/* ═══ APP CARDS ═══ */
+.app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.app-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;transition:all .25s;cursor:pointer;text-decoration:none;color:inherit;display:block;position:relative}
+.app-card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 8px 30px rgba(245,166,35,.12)}
+.app-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.app-card.c-gold::before{background:linear-gradient(90deg,var(--gold),#C47008)}
+.app-card.c-cyan::before{background:linear-gradient(90deg,var(--cyan),#0090B0)}
+.app-card.c-green::before{background:linear-gradient(90deg,var(--green),#00A050)}
+.app-card.c-purple::before{background:linear-gradient(90deg,var(--purple),#6B2FD4)}
+.app-card.c-red::before{background:linear-gradient(90deg,var(--red),#C4000E)}
+.app-card.c-diesel::before{background:linear-gradient(90deg,var(--diesel),#CC6600)}
+.app-card.c-orange::before{background:linear-gradient(90deg,var(--orange),#D04020)}
+.app-head{padding:18px 18px 12px;display:flex;align-items:flex-start;gap:14px}
+.app-emoji{font-size:38px;line-height:1;flex-shrink:0}
+.app-info{flex:1}
+.app-name{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;line-height:1.2}
+.app-ver{font-family:'Space Mono',monospace;font-size:9px;color:var(--txtM);margin-top:2px}
+.app-desc{font-size:11px;color:var(--txtD);padding:0 18px 14px;line-height:1.6}
+.app-tags{display:flex;gap:6px;padding:0 18px 16px;flex-wrap:wrap}
+.tag{font-size:8px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px}
+.tag-free{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.tag-pro{background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.25)}
+.tag-master{background:rgba(156,89,247,.1);color:var(--purple);border:1px solid rgba(156,89,247,.25)}
+.tag-mod{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
+.tag-tool{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.tag-store{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.tag-soon{background:rgba(255,112,67,.08);color:var(--orange);border:1px solid rgba(255,112,67,.2)}
+.app-status{position:absolute;top:14px;right:14px;font-size:8px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px}
+.st-live{background:rgba(0,230,118,.12);color:var(--green)}
+.st-dev{background:rgba(245,166,35,.12);color:var(--gold)}
+.st-soon{background:rgba(255,112,67,.1);color:var(--orange)}
+
+/* ═══ PRICING MINI ═══ */
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.price-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:14px;padding:18px;text-align:center;transition:all .2s}
+.price-card:hover{transform:translateY(-2px)}
+.price-card.feat{border-color:rgba(245,166,35,.3);box-shadow:0 0 20px rgba(245,166,35,.08)}
+.price-emoji{font-size:28px}
+.price-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;margin-top:4px}
+.price-amt{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;margin-top:6px}
+.price-per{font-size:10px;color:var(--txtD)}
+.price-feats{text-align:left;margin-top:10px;font-size:10px;line-height:1.8;color:var(--txtD)}
+.price-feats b{color:var(--txt)}
+
+/* ═══ CONTACT ═══ */
+.contact{background:var(--bg1);border:1px solid var(--bdr);border-radius:16px;padding:24px;text-align:center;margin-top:20px}
+.contact h3{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:3px}
+.contact-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.c-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;transition:all .15s;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+.c-btn:hover{transform:translateY(-2px)}
+.c-btn.wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff}
+.c-btn.wa:hover{box-shadow:0 4px 20px rgba(37,211,102,.3)}
+.c-btn.mail{background:var(--bg2);border:1px solid var(--bdr);color:var(--cyan)}
+.c-btn.mail:hover{border-color:var(--cyan);box-shadow:0 4px 20px rgba(0,212,255,.15)}
+
+.footer{text-align:center;padding:30px 20px 40px;font-size:10px;color:var(--txtM);letter-spacing:1px;line-height:1.8;position:relative;z-index:1}
+
+/* HIDDEN SECTIONS */
+.page{display:none}
+.page.active{display:block}
+
+@media(max-width:600px){
+  .app-grid{grid-template-columns:1fr}
+  .price-grid{grid-template-columns:1fr 1fr}
+  .header{padding:40px 16px 24px}
+  .c-btn{padding:10px 16px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- PARTICLES -->
+<div id="particles"></div>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <div class="logo-hex">⬡</div>
+  <h1>DATESEG MX</h1>
+  <div class="sub">Sistema de Tecnologías Automotrices</div>
+  <div class="tagline">Diagnóstico profesional · Seguridad vial · Programación ECU<br>Herramientas para el técnico automotriz mexicano 🇲🇽</div>
+</div>
+
+<!-- ═══ NAVEGACIÓN ═══ -->
+<div class="nav">
+  <button class="nav-btn act" onclick="showPage('apps')">🔧 PRODUCTOS</button>
+  <button class="nav-btn" onclick="showPage('modulos')">🧩 MÓDULOS</button>
+  <button class="nav-btn" onclick="showPage('precios')">💰 PRECIOS</button>
+  <button class="nav-btn" onclick="showPage('contacto')">📱 CONTACTO</button>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ PÁGINA 1: PRODUCTOS / APPS ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="page active" id="pg-apps">
+<div class="section">
+  <div class="sec-title"><span>🔧</span> PROPART SYSTEM — Diagnóstico</div>
+  <div class="sec-desc">La herramienta principal de diagnóstico OBD2/BLE. Disponible en 3 niveles.</div>
+  <div class="app-grid">
+
+    <!-- PROPART V7 -->
+    <a class="app-card c-gold" href="ProPart_V7_Chards24.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🔧</div>
+        <div class="app-info">
+          <div class="app-name">ProPart System V7</div>
+          <div class="app-ver">v7.0 — Diagnóstico PRO</div>
+        </div>
+      </div>
+      <div class="app-desc">Diagnóstico OBD2 completo con BLE. DTCs, sensores en vivo, 4 gráficas simultáneas, pinouts OEM, Chards IA, diesel, bidireccional, reporte PDF.</div>
+      <div class="app-tags">
+        <span class="tag tag-free">BÁSICO GRATIS</span>
+        <span class="tag tag-pro">PRO $599/mes</span>
+        <span class="tag tag-master">MASTER $999/mes</span>
+      </div>
+    </a>
+
+    <!-- MANUAL -->
+    <a class="app-card c-gold" href="ProPart_Manual_V7.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">📖</div>
+        <div class="app-info">
+          <div class="app-name">Manual ProPart V7</div>
+          <div class="app-ver">15 secciones completas</div>
+        </div>
+      </div>
+      <div class="app-desc">Guía completa: conexión BLE, interpretación DTCs, gráficas, Chalán/Chards, diesel, pinouts, PULSAR predictivo y más.</div>
+      <div class="app-tags">
+        <span class="tag tag-free">GRATIS</span>
+        <span class="tag tag-tool">DOCUMENTACIÓN</span>
+      </div>
+    </a>
+
+    <!-- PROMO VIDEO -->
+    <a class="app-card c-gold" href="ProPart_Promo_Video.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🎬</div>
+        <div class="app-info">
+          <div class="app-name">ProPart — Spot Publicitario</div>
+          <div class="app-ver">8 slides animados</div>
+        </div>
+      </div>
+      <div class="app-desc">Video promocional animado de ProPart System. Ideal para compartir por WhatsApp y redes sociales.</div>
+      <div class="app-tags">
+        <span class="tag tag-tool">MARKETING</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="sec-title"><span>🛡️</span> SEGURIDAD & HERRAMIENTAS</div>
+  <div class="app-grid">
+
+    <!-- OILMASTER -->
+    <a class="app-card c-green" href="OilMaster_V2.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🛡️</div>
+        <div class="app-info">
+          <div class="app-name">OilMaster V2</div>
+          <div class="app-ver">Seguridad Vial</div>
+        </div>
+      </div>
+      <div class="app-desc">SOS emergencia, semáforo de auxilio, directorio de grúas, beacon/strobe, notificaciones en vivo, folio único.</div>
+      <div class="app-tags">
+        <span class="tag tag-free">GRATIS</span>
+        <span class="tag tag-store">SEGURIDAD FAMILIAR</span>
+      </div>
+    </a>
+
+    <!-- DESIGN STUDIO -->
+    <a class="app-card c-cyan" href="ProPart_DesignStudio_V3.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🎨</div>
+        <div class="app-info">
+          <div class="app-name">Design Studio V3</div>
+          <div class="app-ver">Editor gráfico</div>
+        </div>
+      </div>
+      <div class="app-desc">Editor de publicidad y material gráfico para talleres. Crea flyers, tarjetas, banners con tu marca.</div>
+      <div class="app-tags">
+        <span class="tag tag-master">INCLUIDO EN MASTER</span>
+      </div>
+    </a>
+
+    <!-- ANALISIS MERCADO -->
+    <a class="app-card c-cyan" href="DATESEG_Analisis_Mercado.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">📊</div>
+        <div class="app-info">
+          <div class="app-name">Análisis de Mercado</div>
+          <div class="app-ver">DATESEG Corporativo</div>
+        </div>
+      </div>
+      <div class="app-desc">Documento corporativo con análisis de mercado automotriz mexicano, competencia y estrategia DATESEG.</div>
+      <div class="app-tags">
+        <span class="tag tag-tool">CORPORATIVO</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="sec-title"><span>🎓</span> EDUCACIÓN & CÓDIGO</div>
+  <div class="app-grid">
+
+    <!-- ACADEMIA ECU -->
+    <a class="app-card c-purple" href="Academia_ECU_Reparacion.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🔌</div>
+        <div class="app-info">
+          <div class="app-name">Academia ECU</div>
+          <div class="app-ver">9 módulos interactivos</div>
+        </div>
+      </div>
+      <div class="app-desc">Reparación de computadoras automotrices: internos ECU, bench testing, capacitores, BIP373, IMMO, flash. 7 marcas.</div>
+      <div class="app-tags">
+        <span class="tag tag-free">BÁSICOS GRATIS</span>
+        <span class="tag tag-pro">COMPLETO EN PRO+</span>
+      </div>
+    </a>
+
+    <!-- APRENDECODE -->
+    <a class="app-card c-purple" href="AprendeCode_V3.html">
+      <span class="app-status st-live">● EN VIVO</span>
+      <div class="app-head">
+        <div class="app-emoji">🎓</div>
+        <div class="app-info">
+          <div class="app-name">AprendeCode V3</div>
+          <div class="app-ver">Mentor de programación IA</div>
+        </div>
+      </div>
+      <div class="app-desc">Aprende a programar con voz. 6 plantillas de proyecto, código multi-archivo con IA, integración Android Studio.</div>
+      <div class="app-tags">
+        <span class="tag tag-free">GRATIS</span>
+        <span class="tag tag-tool">EDUCACIÓN</span>
+      </div>
+    </a>
+
+    <!-- REFACCIONARIA -->
+    <a class="app-card c-green" href="RefaccionariaMillan.html">
+      <span class="app-status st-dev">● EN DESARROLLO</span>
+      <div class="app-head">
+        <div class="app-emoji">🏪</div>
+        <div class="app-info">
+          <div class="app-name">Refaccionaria Millán</div>
+          <div class="app-ver">Catálogo de partes</div>
+        </div>
+      </div>
+      <div class="app-desc">Partes eléctricas automotrices. Búsqueda por voz, escáner de código de barras, inventario 80+ productos.</div>
+      <div class="app-tags">
+        <span class="tag tag-store">TIENDA</span>
+        <span class="tag tag-soon">PRÓXIMAMENTE WEB</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ PÁGINA 2: MÓDULOS ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="page" id="pg-modulos">
+<div class="section">
+  <div class="sec-title"><span>🧩</span> MÓDULOS INDEPENDIENTES</div>
+  <div class="sec-desc">Cada módulo se compra por separado. Combínalos como quieras — contacta por WhatsApp para armar tu paquete personalizado.</div>
+  <div class="app-grid">
+
+    <div class="app-card c-gold" style="cursor:default">
+      <div class="app-head">
+        <div class="app-emoji">🔑</div>
+        <div class="app-info">
+          <div class="app-name" style="color:var(--gold)">IMMO & LLAVES</div>
+          <div class="app-ver" style="color:var(--gold)">$499 MXN/mes</div>
+        </div>
+      </div>
+      <div class="app-desc">Programación de transponders ID13-ID8A · Hermanado BCM/ECU · Incode/Outcode Ford y Mazda · Base de datos de llaves por marca · Guías paso a paso · Chards limitado</div>
+      <div class="app-tags"><span class="tag tag-mod">MÓDULO INDEPENDIENTE</span></div>
+    </div>
+
+    <div class="app-card c-diesel" style="cursor:default">
+      <div class="app-head">
+        <div class="app-emoji">🛢️</div>
+        <div class="app-info">
+          <div class="app-name" style="color:var(--diesel)">DIESEL PRO</div>
+          <div class="app-ver" style="color:var(--diesel)">$599 MXN/mes</div>
+        </div>
+      </div>
+      <div class="app-desc">8 sistemas: EGR, DPF, Common Rail, turbo VGT, AdBlue, bujías precal., flaps, riel presión · Bidireccional diesel · Tablas de valores · DTCs diesel · Chards limitado</div>
+      <div class="app-tags"><span class="tag tag-mod">MÓDULO INDEPENDIENTE</span></div>
+    </div>
+
+    <div class="app-card c-red" style="cursor:default">
+      <div class="app-head">
+        <div class="app-emoji">⚡</div>
+        <div class="app-info">
+          <div class="app-name" style="color:var(--red)">FLASH ECU</div>
+          <div class="app-ver" style="color:var(--red)">$699 MXN/mes</div>
+        </div>
+      </div>
+      <div class="app-desc">Lectura/escritura BIN · Seed-Key PULSAR Cloud · Reprogramación ECU completa · Soporte Bosch, Denso, Continental · Clonado de computadoras · Chards limitado</div>
+      <div class="app-tags"><span class="tag tag-mod">MÓDULO INDEPENDIENTE</span></div>
+    </div>
+
+    <div class="app-card c-purple" style="cursor:default">
+      <div class="app-head">
+        <div class="app-emoji">🏎️</div>
+        <div class="app-info">
+          <div class="app-name" style="color:var(--purple)">HP TUNERS / REMAPEO</div>
+          <div class="app-ver" style="color:var(--purple)">$799 MXN/mes</div>
+        </div>
+      </div>
+      <div class="app-desc">Tablas inyección y encendido · Remapeo de torque y boost · Calibración de turbos · Mapas A/F personalizados · Export/import calibraciones · Chards limitado</div>
+      <div class="app-tags"><span class="tag tag-mod">MÓDULO INDEPENDIENTE</span></div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:20px;background:var(--bg1);border:1px solid rgba(245,166,35,.2);border-radius:14px;padding:20px;text-align:center">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:6px">🎁 PACKS CON DESCUENTO</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px">
+      <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:12px">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--cyan)">PACK 2 MÓDULOS</div>
+        <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)">$899<span style="font-size:10px;color:var(--txtD)">/mes</span></div>
+        <div style="font-size:9px;color:var(--txtD)">Elige 2 módulos</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(245,166,35,.3);border-radius:10px;padding:12px;box-shadow:0 0 15px rgba(245,166,35,.08)">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--gold)">PACK 3 MÓDULOS</div>
+        <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)">$1,299<span style="font-size:10px;color:var(--txtD)">/mes</span></div>
+        <div style="font-size:9px;color:var(--txtD)">Elige 3 módulos · POPULAR</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(156,89,247,.3);border-radius:10px;padding:12px">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--purple)">PACK TOTAL</div>
+        <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)">$1,999<span style="font-size:10px;color:var(--txtD)">/mes</span></div>
+        <div style="font-size:9px;color:var(--green)">4 módulos + Master · ¡44% OFF!</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(0,230,118,.3);border-radius:10px;padding:12px">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--green)">ANUAL TOTAL</div>
+        <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--gold)">$1,499<span style="font-size:10px;color:var(--txtD)">/mes</span></div>
+        <div style="font-size:9px;color:var(--green)">12 meses · ¡58% OFF!</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ PÁGINA 3: PRECIOS PROPART ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="page" id="pg-precios">
+<div class="section">
+  <div class="sec-title"><span>💰</span> PROPART SYSTEM — PLANES</div>
+  <div class="sec-desc">El plan aplica a la app ProPart. Los módulos se pagan aparte o en pack.</div>
+  <div class="price-grid">
+
+    <div class="price-card">
+      <div class="price-emoji">🆓</div>
+      <div class="price-name" style="color:var(--cyan)">BÁSICO</div>
+      <div class="price-amt" style="color:var(--green)">GRATIS</div>
+      <div class="price-per">para siempre</div>
+      <div class="price-feats">
+        ✓ 50 DTCs más comunes<br>
+        ✓ 1 gráfica en vivo<br>
+        ✓ 5 pinouts populares<br>
+        ✓ ECU: corriente y tierra<br>
+        ✓ Academia ECU básicos<br>
+        🔒 Sin Chards IA<br>
+        🔒 Sin bidireccional
+      </div>
+    </div>
+
+    <div class="price-card feat">
+      <div class="price-emoji">⭐</div>
+      <div class="price-name" style="color:var(--gold)">PRO</div>
+      <div class="price-amt" style="color:var(--gold)">$599</div>
+      <div class="price-per">MXN/mes</div>
+      <div class="price-feats">
+        <b>Todo lo Básico +</b><br>
+        ✓ DTCs completos<br>
+        ✓ 4 gráficas simultáneas<br>
+        ✓ Todos los pinouts<br>
+        ✓ Sensores en vivo<br>
+        ✓ Calibración TPS<br>
+        ✓ <b>Chards LIMITADO</b><br>
+        🔒 Sin PULSAR Predictivo
+      </div>
+    </div>
+
+    <div class="price-card" style="border-color:rgba(156,89,247,.3)">
+      <div class="price-emoji">👑</div>
+      <div class="price-name" style="color:var(--purple)">MASTER</div>
+      <div class="price-amt" style="color:var(--purple)">$999</div>
+      <div class="price-per">MXN/mes</div>
+      <div class="price-feats">
+        <b>Todo lo PRO +</b><br>
+        ✓ Bidireccional completo<br>
+        ✓ PULSAR Predictivo<br>
+        ✓ BIN (lectura)<br>
+        ✓ VIN ilimitado<br>
+        ✓ 🤖 <b>Chards COMPLETO</b><br>
+        ✓ Design Studio<br>
+        ✓ Soporte WhatsApp 24/7
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ PÁGINA 4: CONTACTO ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="page" id="pg-contacto">
+<div class="section">
+  <div class="contact">
+    <div style="font-size:40px;margin-bottom:10px">⬡</div>
+    <h3>DATESEG MX</h3>
+    <div style="font-size:12px;color:var(--txtD);margin:8px 0 4px">Fernando Millán Melchor</div>
+    <div style="font-size:11px;color:var(--txtM)">Av. Vicente Guerrero s/n, Col. Centro, Alpuyeca, Xochitepec, Morelos</div>
+
+    <div style="margin-top:20px">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:10px">📱 ARMA TU PAQUETE POR WHATSAPP</div>
+      <div class="contact-btns">
+        <a class="c-btn wa" href="https://wa.me/527776838196?text=Hola%2C%20me%20interesa%20armar%20mi%20paquete%20ProPart" target="_blank">📱 777-683-8196</a>
+        <a class="c-btn wa" href="https://wa.me/522219567392?text=Hola%2C%20me%20interesa%20armar%20mi%20paquete%20ProPart" target="_blank">📱 221-956-7392</a>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="contact-btns">
+        <a class="c-btn mail" href="mailto:FM095329@gmail.com">📧 FM095329@gmail.com</a>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;font-size:10px;color:var(--txtM);line-height:1.8">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:var(--txtD);letter-spacing:1px;margin-bottom:4px">DOMINIO OBJETIVO</div>
+      <span style="color:var(--gold);font-family:'Space Mono',monospace">dateseg.mx</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  ⬡ DATESEG MX — Sistema de Tecnologías Automotrices<br>
+  Fernando Millán Melchor · Alpuyeca, Xochitepec, Morelos · 2026<br>
+  <span style="color:var(--gold)">Refaccionaria de Partes Eléctricas Millán</span>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+// -- PARTICLES --
+(function(){
+  var c=document.getElementById('particles');
+  for(var i=0;i<20;i++){
+    var p=document.createElement('div');
+    p.className='particle';
+    var s=Math.random()*3+1;
+    var colors=['rgba(245,166,35,.4)','rgba(0,212,255,.3)','rgba(156,89,247,.3)','rgba(0,230,118,.3)'];
+    p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;background:'+colors[Math.floor(Math.random()*colors.length)]+';animation-duration:'+(8+Math.random()*12)+'s;animation-delay:'+Math.random()*10+'s';
+    c.appendChild(p);
+  }
+})();
+
+// -- NAV --
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('pg-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('act')});
+  event.target.classList.add('act');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// -- CHECK FILE EXISTS (graceful fallback) --
+document.querySelectorAll('.app-card[href]').forEach(function(card){
+  card.addEventListener('click',function(e){
+    // Si el archivo no existe, mostrar mensaje amigable en vez de 404
+    // GitHub Pages devuelve 404 pero no podemos verificar con fetch por CORS
+    // Así que dejamos que el navegador intente y ya
+  });
+});
+</script>
+
+</body>
+</html>

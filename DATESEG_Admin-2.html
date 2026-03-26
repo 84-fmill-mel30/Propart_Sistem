@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>DATESEG — Centro de Mando Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050A12;--bg1:#0A1422;--bg2:#0F1C32;--bg3:#162444;--bdr:#1E3058;--gold:#F5A623;--cyan:#00D4FF;--green:#00E676;--red:#FF3D5A;--purple:#9C59F7;--orange:#FF7043;--diesel:#FF8C00;--txt:#D0E4F5;--txtD:#6880A0;--txtM:#344870}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-height:100vh}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.side{width:220px;min-width:220px;background:var(--bg1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto}
+.side-logo{padding:16px;border-bottom:1px solid var(--bdr);text-align:center}
+.side-logo h2{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--gold);letter-spacing:3px}
+.side-logo span{font-size:9px;color:var(--txtD);letter-spacing:1px}
+.side-nav{flex:1;padding:8px}
+.sn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:var(--txtD);font-size:11px;font-family:'Exo 2',sans-serif;font-weight:600;transition:all .12s}
+.sn:hover{background:var(--bg2);color:var(--txt)}
+.sn.act{background:linear-gradient(90deg,rgba(245,166,35,.12),transparent);color:var(--gold)}
+.sn .ico{font-size:18px;width:24px;text-align:center}
+.slbl{font-size:8px;font-weight:700;letter-spacing:2px;color:var(--txtM);padding:12px 12px 4px;text-transform:uppercase}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:20px}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+
+/* COMMON */
+.pg{display:none}.pg.show{display:block}
+.pg-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.card{background:var(--bg1);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px}
+.card-b{padding:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.stat{text-align:center;padding:16px;background:var(--bg2);border-radius:10px;border:1px solid var(--bdr)}
+.stat-n{font-family:'Space Mono',monospace;font-size:28px;font-weight:700}
+.stat-l{font-size:10px;color:var(--txtD);margin-top:2px}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);font-family:'Exo 2',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .12s}
+.btn:hover{border-color:var(--gold)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#C47008);color:#000;border-color:var(--gold)}
+.btn-green{background:rgba(0,230,118,.15);color:var(--green);border-color:rgba(0,230,118,.3)}
+.btn-red{background:rgba(255,61,90,.12);color:var(--red);border-color:rgba(255,61,90,.3)}
+.inp{background:var(--bg2);border:1px solid var(--bdr);border-radius:7px;padding:8px 12px;color:var(--txt);font-size:12px;font-family:'Exo 2',sans-serif;outline:none;width:100%}
+.inp:focus{border-color:var(--gold)}
+.lbl{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--txtD);margin-bottom:4px;display:block}
+.tag{font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:10px;display:inline-block}
+.t-act{background:rgba(0,230,118,.12);color:var(--green)}
+.t-pro{background:rgba(245,166,35,.12);color:var(--gold)}
+.t-mas{background:rgba(156,89,247,.12);color:var(--purple)}
+.t-exp{background:rgba(255,61,90,.12);color:var(--red)}
+.t-mod{background:rgba(0,212,255,.12);color:var(--cyan)}
+.sep{height:1px;background:var(--bdr);margin:12px 0}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:var(--bg2);padding:8px 10px;text-align:left;font-weight:700;font-size:10px;letter-spacing:1px;color:var(--txtD);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(30,48,88,.4)}
+.tbl tr:hover td{background:rgba(245,166,35,.03)}
+
+/* ═══ CONFIGURADOR DRAG & DROP ═══ */
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cfg-col{background:var(--bg1);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;min-height:300px}
+.cfg-col-head{padding:10px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.cfg-col-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px}
+.cfg-col-price{font-family:'Space Mono',monospace;font-size:14px;font-weight:700}
+.cfg-col-body{padding:8px;min-height:200px}
+.cfg-item{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:grab;font-size:11px;display:flex;align-items:center;gap:8px;transition:all .12s;user-select:none}
+.cfg-item:active{cursor:grabbing;opacity:.7;transform:scale(.97)}
+.cfg-item .grip{color:var(--txtM);font-size:14px;flex-shrink:0}
+.cfg-item .fname{flex:1}
+.cfg-item .fprice{font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);white-space:nowrap}
+.cfg-item.dragging{opacity:.4;border-color:var(--gold)}
+.cfg-col-body.drag-over{background:rgba(245,166,35,.05);border:2px dashed var(--gold);border-radius:8px}
+.cfg-price-input{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 6px;width:70px;color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;text-align:right;outline:none}
+.cfg-price-input:focus{border-color:var(--gold)}
+.cfg-total{padding:10px 14px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.cfg-total-price{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--gold)}
+
+/* CLIENT ROW */
+.client-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(30,48,88,.4)}
+.client-row:last-child{border:none}
+.client-avatar{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.client-info{flex:1}
+.client-name{font-size:12px;font-weight:600}
+.client-detail{font-size:10px;color:var(--txtD)}
+
+@media(max-width:768px){
+  .side{display:none}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .cfg-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="side">
+  <div class="side-logo">
+    <div style="font-size:28px;margin-bottom:4px">⬡</div>
+    <h2>DATESEG MX</h2>
+    <span>Centro de Mando</span>
+  </div>
+  <div class="side-nav">
+    <div class="slbl">PRINCIPAL</div>
+    <button class="sn act" onclick="go('dashboard')"><span class="ico">📊</span>Dashboard</button>
+    <button class="sn" onclick="go('config')"><span class="ico">🧩</span>Configurador Módulos</button>
+    <button class="sn" onclick="go('licencias')"><span class="ico">🔑</span>Licencias</button>
+    <button class="sn" onclick="go('clientes')"><span class="ico">👥</span>Catálogo Clientes</button>
+    <div class="slbl">CONTENIDO</div>
+    <button class="sn" onclick="go('diagramas')"><span class="ico">📐</span>Diagramas OEM</button>
+    <button class="sn" onclick="go('apps')"><span class="ico">📱</span>Apps & Módulos</button>
+    <div class="slbl">SISTEMA</div>
+    <button class="sn" onclick="go('firebase')"><span class="ico">🔗</span>Firebase / API</button>
+    <button class="sn" onclick="go('chards')"><span class="ico">🤖</span>Chards Config</button>
+    <button class="sn" onclick="go('tokens')"><span class="ico">🔐</span>Tokens & BIN</button>
+    <button class="sn" onclick="go('roadmap')"><span class="ico">🗺️</span>Roadmap DATESEG</button>
+  </div>
+</nav>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="main">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 1. DASHBOARD ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg show" id="pg-dashboard">
+  <div class="pg-title">📊 Dashboard General</div>
+  <div class="g4" style="margin-bottom:16px">
+    <div class="stat"><div class="stat-n" style="color:var(--gold)" id="totalClients">0</div><div class="stat-l">Clientes registrados</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)" id="totalActive">0</div><div class="stat-l">Licencias activas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--cyan)" id="totalRevenue">$0</div><div class="stat-l">Ingreso mensual MXN</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red)" id="totalExpired">0</div><div class="stat-l">Por vencer (30 días)</div></div>
+  </div>
+
+  <!-- VENTAS POR MÓDULO -->
+  <div class="card">
+    <div class="card-h">💰 Proyección de Ventas por Módulo</div>
+    <div class="card-b">
+      <div id="salesChart" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <div class="sep"></div>
+      <div class="g2">
+        <div>
+          <div class="lbl">META MENSUAL</div>
+          <input class="inp" id="metaMensual" type="number" value="50000" onchange="updateDashboard()" style="font-family:'Space Mono',monospace">
+        </div>
+        <div>
+          <div class="lbl">PROGRESO</div>
+          <div style="background:var(--bg3);border-radius:6px;height:36px;overflow:hidden;position:relative;margin-top:4px">
+            <div id="metaBar" style="height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan));border-radius:6px;transition:width .5s;width:0%"></div>
+            <div id="metaPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÚLTIMAS LICENCIAS -->
+  <div class="card">
+    <div class="card-h">🔑 Últimas Licencias Generadas</div>
+    <div class="card-b">
+      <table class="tbl">
+        <thead><tr><th>CÓDIGO</th><th>TALLER</th><th>PLAN</th><th>EXPIRA</th><th>ESTADO</th></tr></thead>
+        <tbody id="dashLicTable"></tbody>
+      </table>
+      <div id="dashLicEmpty" style="text-align:center;padding:20px;color:var(--txtD);font-size:11px">Sin licencias generadas. Ve a Licencias para crear una.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 2. CONFIGURADOR DE MÓDULOS (AJEDREZ) ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-config">
+  <div class="pg-title">🧩 Configurador de Módulos — Arrastra funciones entre planes</div>
+  <div style="font-size:11px;color:var(--txtD);margin-bottom:12px;line-height:1.6">Arrastra las funciones de un plan a otro como piezas de ajedrez. El precio se ajusta automáticamente. Haz clic en el precio de cada función para editarlo.</div>
+
+  <!-- BANCO DE FUNCIONES (todas las piezas disponibles) -->
+  <div class="cfg-grid" id="cfgGrid">
+    <!-- Se genera dinámicamente por JS -->
+  </div>
+
+  <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="saveCfg()">💾 GUARDAR CONFIGURACIÓN</button>
+    <button class="btn" onclick="resetCfg()">🔄 RESET A DEFAULTS</button>
+    <button class="btn btn-green" onclick="exportCfgJSON()">📤 EXPORTAR JSON</button>
+  </div>
+
+  <div id="cfgSaved" style="display:none;margin-top:10px;padding:10px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);border-radius:8px;font-size:11px;color:var(--green)">✅ Configuración guardada en el dispositivo</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 3. LICENCIAS ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-licencias">
+  <div class="pg-title">🔑 Gestión de Licencias</div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="openNewLic()">+ NUEVA LICENCIA</button>
+    <button class="btn" onclick="exportLicCSV()">📤 EXPORTAR CSV</button>
+    <input class="inp" id="licSearch" placeholder="🔍 Buscar por taller o código..." style="max-width:300px" oninput="filterLics()">
+  </div>
+
+  <!-- FORM NUEVA LICENCIA -->
+  <div class="card" id="newLicForm" style="display:none">
+    <div class="card-h" style="color:var(--gold)">✨ NUEVA LICENCIA</div>
+    <div class="card-b">
+      <div class="g2" style="margin-bottom:10px">
+        <div><div class="lbl">NOMBRE DEL TALLER</div><input class="inp" id="nlTaller" placeholder="Ej: Taller Mecánico García"></div>
+        <div><div class="lbl">CONTACTO (TELÉFONO)</div><input class="inp" id="nlTel" placeholder="Ej: 777-123-4567"></div>
+      </div>
+      <div class="g3" style="margin-bottom:10px">
+        <div><div class="lbl">PLAN PROPART</div>
+          <select class="inp" id="nlPlan"><option value="BASICO">Básico (Gratis)</option><option value="PRO">PRO — $599/mes</option><option value="MASTER">MASTER — $999/mes</option></select>
+        </div>
+        <div><div class="lbl">MÓDULOS ADICIONALES</div>
+          <select class="inp" id="nlMods" multiple size="4" style="height:auto">
+            <option value="IMMO">🔑 IMMO & Llaves — $499</option>
+            <option value="DIESEL">🛢️ Diesel PRO — $599</option>
+            <option value="FLASH">⚡ Flash ECU — $699</option>
+            <option value="TUNER">🏎️ HP Tuners — $799</option>
+          </select>
+        </div>
+        <div><div class="lbl">DURACIÓN</div>
+          <select class="inp" id="nlDur"><option value="1">1 mes</option><option value="3">3 meses (-10%)</option><option value="6">6 meses (-15%)</option><option value="12">12 meses (-20%)</option></select>
+          <div style="margin-top:8px"><div class="lbl">TOTAL ESTIMADO</div><div id="nlTotal" style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--gold)">$0/mes</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="generateLic()">🔑 GENERAR LICENCIA</button>
+        <button class="btn" onclick="document.getElementById('newLicForm').style.display='none'">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card">
+    <div class="card-b" style="padding:0">
+      <table class="tbl" id="licTable">
+        <thead><tr><th>CÓDIGO</th><th>TALLER</th><th>TEL</th><th>PLAN</th><th>MÓDULOS</th><th>$/MES</th><th>CREADA</th><th>EXPIRA</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody id="licBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 4. CATÁLOGO CLIENTES ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-clientes">
+  <div class="pg-title">👥 Catálogo de Clientes</div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="openNewClient()">+ NUEVO CLIENTE</button>
+    <input class="inp" id="clientSearch" placeholder="🔍 Buscar cliente..." style="max-width:300px" oninput="filterClients()">
+  </div>
+
+  <div class="card" id="newClientForm" style="display:none">
+    <div class="card-h" style="color:var(--cyan)">👤 NUEVO CLIENTE</div>
+    <div class="card-b">
+      <div class="g3" style="margin-bottom:10px">
+        <div><div class="lbl">NOMBRE / TALLER</div><input class="inp" id="ncName"></div>
+        <div><div class="lbl">TELÉFONO</div><input class="inp" id="ncTel"></div>
+        <div><div class="lbl">EMAIL</div><input class="inp" id="ncEmail"></div>
+      </div>
+      <div class="g3" style="margin-bottom:10px">
+        <div><div class="lbl">CIUDAD / ESTADO</div><input class="inp" id="ncCity"></div>
+        <div><div class="lbl">VEHÍCULOS PRINCIPALES</div><input class="inp" id="ncVehicles" placeholder="Nissan, VW, Chevrolet..."></div>
+        <div><div class="lbl">NOTAS</div><input class="inp" id="ncNotes" placeholder="Especialidad, referencia..."></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="saveClient()">💾 GUARDAR CLIENTE</button>
+        <button class="btn" onclick="document.getElementById('newClientForm').style.display='none'">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-b" style="padding:0">
+    <table class="tbl">
+      <thead><tr><th>CLIENTE</th><th>TEL</th><th>EMAIL</th><th>CIUDAD</th><th>VEHÍCULOS</th><th>PLAN</th><th>DESDE</th><th>ACCIONES</th></tr></thead>
+      <tbody id="clientBody"></tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 5. DIAGRAMAS OEM ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-diagramas">
+  <div class="pg-title">📐 Diagramas OEM — Subir & Consultar</div>
+  <div style="font-size:11px;color:var(--txtD);margin-bottom:14px;line-height:1.6">Sube imágenes o PDFs de diagramas originales. Se guardan localmente y cuando configures Firebase se sincronizan a la nube para proyectarlos en la app.</div>
+
+  <div class="card">
+    <div class="card-h" style="color:var(--gold)">📤 SUBIR DIAGRAMA</div>
+    <div class="card-b">
+      <div class="g3" style="margin-bottom:10px">
+        <div><div class="lbl">MARCA</div>
+          <select class="inp" id="dgMarca"><option>Nissan</option><option>VW</option><option>Chevrolet</option><option>Ford</option><option>Toyota</option><option>Honda</option><option>Dodge/Chrysler</option><option>Hyundai/Kia</option><option>Mazda</option><option>Otro</option></select>
+        </div>
+        <div><div class="lbl">MODELO / MOTOR</div><input class="inp" id="dgModelo" placeholder="Ej: Tsuru GA16DE"></div>
+        <div><div class="lbl">TIPO</div>
+          <select class="inp" id="dgTipo"><option>Pinout ECU</option><option>Diagrama eléctrico</option><option>Cableado motor</option><option>Sistema IMMO</option><option>Caja fusibles</option><option>Otro</option></select>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div class="lbl">ARCHIVO (imagen o PDF)</div>
+        <input type="file" id="dgFile" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--bdr);border-radius:7px;padding:8px;color:var(--txt);width:100%">
+      </div>
+      <div><div class="lbl">NOTAS</div><input class="inp" id="dgNotas" placeholder="Ej: Página 42 del FSM, diagrama de inyectores..."></div>
+      <button class="btn btn-gold" style="margin-top:10px" onclick="saveDiagram()">📤 GUARDAR DIAGRAMA</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">📁 Diagramas Guardados</div>
+    <div class="card-b" id="dgList">
+      <div style="text-align:center;padding:20px;color:var(--txtD);font-size:11px">Sin diagramas. Sube el primer diagrama OEM arriba.</div>
+    </div>
+  </div>
+
+  <!-- VISOR -->
+  <div class="card" id="dgViewer" style="display:none">
+    <div class="card-h">🔍 Visor de Diagrama <button class="btn btn-red" style="margin-left:auto;font-size:10px;padding:4px 12px" onclick="document.getElementById('dgViewer').style.display='none'">✕ CERRAR</button></div>
+    <div class="card-b" style="text-align:center">
+      <img id="dgViewImg" style="max-width:100%;max-height:70vh;border-radius:8px;border:1px solid var(--bdr)">
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 6. APPS & MÓDULOS (inventario) ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-apps">
+  <div class="pg-title">📱 Inventario de Apps & Módulos</div>
+  <div style="font-size:11px;color:var(--txtD);margin-bottom:14px;line-height:1.6">Todas las herramientas del ecosistema DATESEG. Arrastra entre "Incluido" y "Módulo aparte" para reorganizar.</div>
+  <div class="g2" id="appsInventory">
+    <div class="card">
+      <div class="card-h" style="color:var(--green)">✅ INCLUIDOS EN PROPART</div>
+      <div class="card-b" id="appsIncluded"></div>
+    </div>
+    <div class="card">
+      <div class="card-h" style="color:var(--purple)">🧩 MÓDULOS APARTE (de pago)</div>
+      <div class="card-b" id="appsSeparate"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ 7. FIREBASE / API ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<div class="pg" id="pg-firebase">
+  <div class="pg-title">🔗 Firebase & API Config</div>
+  <div class="card">
+    <div class="card-h">🔥 Firebase Config</div>
+    <div class="card-b">
+      <div class="g2" style="margin-bottom:10px">
+        <div><div class="lbl">PROJECT ID</div><input class="inp" id="fbProject" value="propartv7"></div>
+        <div><div class="lbl">REGION</div><input class="inp" id="fbRegion" value="us-central1"></div>
+      </div>
+      <div class="g2" style="margin-bottom:10px">
+        <div><div class="lbl">API KEY</div><input class="inp" id="fbKey" type="password" placeholder="AIzaSy..."></div>
+        <div><div class="lbl">STORAGE BUCKET</div><input class="inp" id="fbBucket" value="propartv7.appspot.com"></div>
+      </div>
+      <div style="font-size:10px;color:var(--txtD);margin-bottom:10px;padding:8px;background:var(--bg2);border-radius:6px">
+        💡 Los diagramas OEM se subirán a <b>Firebase Storage</b> en la carpeta <code>/diagramas/{marca}/{modelo}/</code>. Las licencias y clientes se sincronizan a <b>Firestore</b>.
+      </div>
+      <button class="btn btn-gold" onclick="saveFirebase()">💾 GUARDAR CONFIG FIREBASE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 8. CHARDS CONFIG ═══ -->
+<div class="pg" id="pg-chards">
+  <div class="pg-title">🤖 Configuración Chards IA</div>
+  <div class="card">
+    <div class="card-h">🤖 Chards — Niveles de acceso</div>
+    <div class="card-b">
+      <div class="g3">
+        <div style="padding:12px;background:var(--bg2);border-radius:8px;text-align:center">
+          <div style="font-size:24px">🚫</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--txtM);margin-top:4px">BÁSICO</div>
+          <div style="font-size:10px;color:var(--txtD);margin-top:4px">Sin acceso a Chards</div>
+        </div>
+        <div style="padding:12px;background:rgba(245,166,35,.05);border:1px solid rgba(245,166,35,.15);border-radius:8px;text-align:center">
+          <div style="font-size:24px">⭐</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--gold);margin-top:4px">PRO + MÓDULOS</div>
+          <div style="font-size:10px;color:var(--txtD);margin-top:4px">Solo DTCs, sensores y cables. Respuestas cortas. Sin plática libre.</div>
+        </div>
+        <div style="padding:12px;background:rgba(156,89,247,.05);border:1px solid rgba(156,89,247,.15);border-radius:8px;text-align:center">
+          <div style="font-size:24px">👑</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--purple);margin-top:4px">MASTER</div>
+          <div style="font-size:10px;color:var(--txtD);margin-top:4px">Plática libre, cámara, diagnóstico narrado, voz. Todo el poder.</div>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="g2">
+        <div><div class="lbl">NOMBRE DEFAULT DEL USUARIO</div><input class="inp" id="chardsDefName" value="Ingeniero"></div>
+        <div><div class="lbl">MODELO CLAUDE API</div><input class="inp" id="chardsModel" value="claude-sonnet-4-20250514"></div>
+      </div>
+      <div style="margin-top:10px"><div class="lbl">MAX TOKENS RESPUESTA</div><input class="inp" id="chardsTokens" type="number" value="650" style="max-width:150px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 9. TOKENS & BIN ═══ -->
+<div class="pg" id="pg-tokens">
+  <div class="pg-title">🔐 Tokens, BIN & Historial</div>
+  <div class="card">
+    <div class="card-h">🔐 LIC_TOKEN Dongle</div>
+    <div class="card-b">
+      <div class="lbl">TOKEN MASTER ACTUAL</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="inp" id="masterToken" type="password" value="PSPV12-XXXX-XXXX-XXXX" style="font-family:'Space Mono',monospace">
+        <button class="btn" onclick="var i=document.getElementById('masterToken');i.type=i.type==='password'?'text':'password'">👁️</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h">📦 Historial BIN</div>
+    <div class="card-b" id="binHistory">
+      <div style="text-align:center;padding:20px;color:var(--txtD);font-size:11px">Sin archivos BIN registrados. Se irán agregando conforme se use el módulo Flash ECU.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 10. ROADMAP ═══ -->
+<div class="pg" id="pg-roadmap">
+  <div class="pg-title">🗺️ Roadmap DATESEG MX</div>
+  <div class="card">
+    <div class="card-h" style="color:var(--green)">✅ COMPLETADO</div>
+    <div class="card-b" style="font-size:11px;line-height:2">
+      ✅ ProPart System V7 — App diagnóstico OBD2/BLE<br>
+      ✅ Chards IA — Asistente con Claude API<br>
+      ✅ OilMaster V2 — Seguridad vial SOS<br>
+      ✅ Design Studio V3 — Editor gráfico<br>
+      ✅ Academia ECU — 9 módulos, 7 marcas<br>
+      ✅ AprendeCode V3 — Mentor programación IA<br>
+      ✅ Manual ProPart V7 — 15 secciones<br>
+      ✅ Portal DATESEG (index.html) — GitHub Pages<br>
+      ✅ Spot publicitario animado<br>
+      ✅ Análisis de mercado corporativo<br>
+      ✅ Base de datos 100+ pinouts con colores OEM<br>
+      ✅ Generador de licencias con WhatsApp<br>
+      ✅ Sistema de planes Básico/Pro/Master
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h" style="color:var(--gold)">🔨 EN DESARROLLO</div>
+    <div class="card-b" style="font-size:11px;line-height:2">
+      🔨 Centro de Mando Admin (este panel)<br>
+      🔨 4 módulos independientes (IMMO, Diesel, Flash, HP Tuners)<br>
+      🔨 Sistema de bloqueo por plan en ProPart<br>
+      🔨 Configurador de paquetes (drag & drop)<br>
+      🔨 Catálogo de clientes<br>
+      🔨 Subida de diagramas OEM a Firebase<br>
+      🔨 Android Studio APK nativo<br>
+      🔨 Integración Refaccionaria Millán con ProPart
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h" style="color:var(--cyan)">🎯 PRÓXIMAMENTE</div>
+    <div class="card-b" style="font-size:11px;line-height:2">
+      🎯 dateseg.mx — Dominio propio<br>
+      🎯 OilMaster integrado a Refaccionaria<br>
+      🎯 Proyecto grúas → módulo OilMaster<br>
+      🎯 App Play Store (APK firmado)<br>
+      🎯 Firebase Cloud Functions para Seed-Key<br>
+      🎯 PULSAR Predictivo con historial real<br>
+      🎯 Generador de diagramas desde Excel<br>
+      🎯 RedMed panel publicitario con analytics
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ═══ JAVASCRIPT ═══ -->
+<!-- ════════════════════════════════════════════ -->
+<script>
+// ═══ NAVIGATION ═══
+function go(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('show'));
+  document.getElementById('pg-'+id)?.classList.add('show');
+  document.querySelectorAll('.sn').forEach(b=>b.classList.remove('act'));
+  event?.target?.closest('.sn')?.classList.add('act');
+}
+
+// ═══ LOCAL STORAGE HELPERS ═══
+function LS(key,val){
+  if(val===undefined) return JSON.parse(localStorage.getItem('dateseg_'+key)||'null');
+  localStorage.setItem('dateseg_'+key,JSON.stringify(val));
+}
+
+// ═══ MODULE CONFIGURATOR (AJEDREZ) ═══
+const DEFAULT_FEATURES=[
+  // {id, name, defaultCol, price}
+  // col: 'basico','pro','master','immo','diesel','flash','tuner'
+  {id:'dtc50',name:'DTCs básicos (50)',col:'basico',price:0},
+  {id:'graf1',name:'1 gráfica en vivo',col:'basico',price:0},
+  {id:'pin5',name:'5 pinouts populares',col:'basico',price:0},
+  {id:'ecu_ct',name:'ECU: corriente y tierra',col:'basico',price:0},
+  {id:'academia_bas',name:'Academia ECU básicos',col:'basico',price:0},
+
+  {id:'dtc_full',name:'DTCs completos todas marcas',col:'pro',price:80},
+  {id:'graf4',name:'4 gráficas simultáneas',col:'pro',price:60},
+  {id:'pin_all',name:'Todos los pinouts',col:'pro',price:80},
+  {id:'sensor_live',name:'Sensores en vivo completos',col:'pro',price:70},
+  {id:'calib_tps',name:'Calibración cuerpo acelerador',col:'pro',price:50},
+  {id:'ecu_full',name:'Reparación ECU completa',col:'pro',price:60},
+  {id:'chards_lim',name:'Chards LIMITADO',col:'pro',price:99},
+
+  {id:'bidir',name:'Bidireccional completo',col:'master',price:120},
+  {id:'pulsar',name:'PULSAR Predictivo',col:'master',price:100},
+  {id:'bin_read',name:'BIN lectura',col:'master',price:80},
+  {id:'vin_unlim',name:'VIN ilimitado',col:'master',price:50},
+  {id:'chards_full',name:'🤖 Chards COMPLETO',col:'master',price:150},
+  {id:'design_studio',name:'Design Studio',col:'master',price:50},
+  {id:'soporte247',name:'Soporte WhatsApp 24/7',col:'master',price:49},
+
+  {id:'immo_trans',name:'Transponders ID13-ID8A',col:'immo',price:120},
+  {id:'immo_herm',name:'Hermanado BCM/ECU',col:'immo',price:100},
+  {id:'immo_inout',name:'Incode/Outcode Ford/Mazda',col:'immo',price:130},
+  {id:'immo_db',name:'Base datos llaves por marca',col:'immo',price:80},
+  {id:'immo_guide',name:'Guías paso a paso llaves',col:'immo',price:69},
+
+  {id:'diesel_8sys',name:'8 sistemas diesel completos',col:'diesel',price:150},
+  {id:'diesel_bidir',name:'Bidireccional diesel',col:'diesel',price:120},
+  {id:'diesel_tables',name:'Tablas valores por motor',col:'diesel',price:80},
+  {id:'diesel_dtc',name:'DTCs diesel completos',col:'diesel',price:100},
+  {id:'diesel_proc',name:'Procedimientos diesel',col:'diesel',price:80},
+
+  {id:'flash_bin',name:'Lectura/escritura BIN',col:'flash',price:180},
+  {id:'flash_seed',name:'Seed-Key PULSAR Cloud',col:'flash',price:150},
+  {id:'flash_reprog',name:'Reprogramación ECU',col:'flash',price:170},
+  {id:'flash_clone',name:'Clonado computadoras',col:'flash',price:130},
+
+  {id:'tune_tables',name:'Tablas inyección/encendido',col:'tuner',price:180},
+  {id:'tune_remap',name:'Remapeo torque y boost',col:'tuner',price:200},
+  {id:'tune_turbo',name:'Calibración turbos',col:'tuner',price:150},
+  {id:'tune_af',name:'Mapas A/F personalizados',col:'tuner',price:140},
+];
+
+const COLUMNS=[
+  {id:'basico',name:'🆓 BÁSICO',color:'var(--cyan)',basePrice:0},
+  {id:'pro',name:'⭐ PRO',color:'var(--gold)',basePrice:599},
+  {id:'master',name:'👑 MASTER',color:'var(--purple)',basePrice:999},
+  {id:'immo',name:'🔑 IMMO',color:'var(--gold)',basePrice:499},
+  {id:'diesel',name:'🛢️ DIESEL',color:'var(--diesel)',basePrice:599},
+  {id:'flash',name:'⚡ FLASH',color:'var(--red)',basePrice:699},
+  {id:'tuner',name:'🏎️ TUNER',color:'var(--purple)',basePrice:799},
+];
+
+let features=[];
+
+function loadCfg(){
+  features=LS('features')||JSON.parse(JSON.stringify(DEFAULT_FEATURES));
+  renderCfg();
+}
+
+function renderCfg(){
+  const grid=document.getElementById('cfgGrid');
+  grid.innerHTML='';
+  COLUMNS.forEach(col=>{
+    const items=features.filter(f=>f.col===col.id);
+    const total=items.reduce((s,f)=>s+f.price,0);
+    const div=document.createElement('div');
+    div.className='cfg-col';
+    div.innerHTML=`
+      <div class="cfg-col-head">
+        <div class="cfg-col-name" style="color:${col.color}">${col.name}</div>
+        <div class="cfg-col-price" style="color:${col.color}">$${col.basePrice}/mes</div>
+      </div>
+      <div class="cfg-col-body" id="cfgCol_${col.id}"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="dropFeature(event,'${col.id}');this.classList.remove('drag-over')">
+        ${items.map(f=>`
+          <div class="cfg-item" draggable="true" ondragstart="dragFeature(event,'${f.id}')" id="feat_${f.id}">
+            <span class="grip">⠿</span>
+            <span class="fname">${f.name}</span>
+            <input class="cfg-price-input" value="${f.price}" onchange="updateFeaturePrice('${f.id}',this.value)" onclick="event.stopPropagation()">
+          </div>
+        `).join('')}
+      </div>
+      <div class="cfg-total">
+        <span style="font-size:10px;color:var(--txtD)">Valor funciones:</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;color:${col.color}">$${total}</span>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+let draggedId=null;
+function dragFeature(e,id){draggedId=id;e.dataTransfer.effectAllowed='move';}
+function dropFeature(e,colId){
+  e.preventDefault();
+  if(!draggedId) return;
+  const f=features.find(x=>x.id===draggedId);
+  if(f){f.col=colId;renderCfg();}
+  draggedId=null;
+}
+function updateFeaturePrice(id,val){
+  const f=features.find(x=>x.id===id);
+  if(f) f.price=parseInt(val)||0;
+  renderCfg();
+}
+function saveCfg(){
+  LS('features',features);
+  document.getElementById('cfgSaved').style.display='block';
+  setTimeout(()=>document.getElementById('cfgSaved').style.display='none',3000);
+}
+function resetCfg(){
+  if(!confirm('¿Resetear toda la configuración a los valores por defecto?')) return;
+  features=JSON.parse(JSON.stringify(DEFAULT_FEATURES));
+  LS('features',features);
+  renderCfg();
+}
+function exportCfgJSON(){
+  const blob=new Blob([JSON.stringify({columns:COLUMNS,features:features},null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='DATESEG_Config_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+// ═══ LICENCIAS ═══
+function getLics(){return LS('licencias')||[];}
+function saveLics(l){LS('licencias',l);}
+
+const PLAN_PRICES={BASICO:0,PRO:599,MASTER:999};
+const MOD_PRICES={IMMO:499,DIESEL:599,FLASH:699,TUNER:799};
+
+function openNewLic(){document.getElementById('newLicForm').style.display='block';calcLicTotal();}
+
+// Auto-calc total when selections change
+document.getElementById('nlPlan')?.addEventListener('change',calcLicTotal);
+document.getElementById('nlMods')?.addEventListener('change',calcLicTotal);
+document.getElementById('nlDur')?.addEventListener('change',calcLicTotal);
+
+function calcLicTotal(){
+  const plan=document.getElementById('nlPlan').value;
+  const mods=Array.from(document.getElementById('nlMods').selectedOptions).map(o=>o.value);
+  const dur=parseInt(document.getElementById('nlDur').value);
+  let monthly=PLAN_PRICES[plan]||0;
+  mods.forEach(m=>monthly+=(MOD_PRICES[m]||0));
+  // Pack discounts
+  if(mods.length===2) monthly=monthly*0.9;
+  if(mods.length===3) monthly=monthly*0.82;
+  if(mods.length>=4) monthly=monthly*0.75;
+  // Duration discount
+  const discounts={1:0,3:0.10,6:0.15,12:0.20};
+  monthly=Math.round(monthly*(1-(discounts[dur]||0)));
+  document.getElementById('nlTotal').textContent='$'+monthly.toLocaleString()+'/mes';
+  return monthly;
+}
+
+function generateLic(){
+  const taller=document.getElementById('nlTaller').value.trim();
+  if(!taller){alert('Ingresa el nombre del taller');return;}
+  const plan=document.getElementById('nlPlan').value;
+  const mods=Array.from(document.getElementById('nlMods').selectedOptions).map(o=>o.value);
+  const dur=parseInt(document.getElementById('nlDur').value);
+  const tel=document.getElementById('nlTel').value.trim();
+  const monthly=calcLicTotal();
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s1='',s2='';for(let i=0;i<4;i++){s1+=chars[Math.floor(Math.random()*chars.length)];s2+=chars[Math.floor(Math.random()*chars.length)];}
+  const code='PP-'+plan+'-'+s1+'-'+s2;
+  const now=new Date();const exp=new Date(now);exp.setMonth(exp.getMonth()+dur);
+  const lic={code,taller,tel,plan,mods,monthly,dur:dur+'m',creado:now.toISOString().slice(0,10),expira:exp.toISOString().slice(0,10),estado:'ACTIVO'};
+  const lics=getLics();lics.unshift(lic);saveLics(lics);
+  // Also add to clients if not exist
+  const clients=getClients();
+  if(!clients.find(c=>c.name===taller)){
+    clients.push({name:taller,tel,email:'',city:'',vehicles:'',notes:'Plan '+plan,date:now.toISOString().slice(0,10),plan});
+    saveClients(clients);
+  }
+  document.getElementById('newLicForm').style.display='none';
+  renderLics();updateDashboard();
+  // Copy to clipboard
+  navigator.clipboard?.writeText(code);
+  alert('✅ Licencia generada: '+code+'\n\nCopiada al portapapeles.\nEnvíala por WhatsApp al cliente.');
+}
+
+function renderLics(){
+  const lics=getLics();
+  const body=document.getElementById('licBody');
+  const search=(document.getElementById('licSearch')?.value||'').toLowerCase();
+  const filtered=lics.filter(l=>(l.taller+l.code).toLowerCase().includes(search));
+  body.innerHTML=filtered.map((l,i)=>`
+    <tr>
+      <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold)">${l.code}</td>
+      <td style="font-weight:600">${l.taller}</td>
+      <td style="font-size:10px">${l.tel||'—'}</td>
+      <td><span class="tag ${l.plan==='MASTER'?'t-mas':l.plan==='PRO'?'t-pro':'t-act'}">${l.plan}</span></td>
+      <td style="font-size:10px">${(l.mods||[]).join(', ')||'—'}</td>
+      <td style="font-family:'Space Mono',monospace;color:var(--green)">$${l.monthly||0}</td>
+      <td style="font-size:10px;color:var(--txtD)">${l.creado}</td>
+      <td style="font-size:10px">${l.expira}</td>
+      <td><span class="tag ${l.estado==='ACTIVO'?'t-act':'t-exp'}">${l.estado}</span></td>
+      <td><button class="btn btn-red" style="font-size:9px;padding:3px 8px" onclick="deleteLic(${i})">✕</button></td>
+    </tr>
+  `).join('');
+  // Dashboard table
+  const dashBody=document.getElementById('dashLicTable');
+  const dashEmpty=document.getElementById('dashLicEmpty');
+  if(lics.length){
+    dashEmpty.style.display='none';
+    dashBody.innerHTML=lics.slice(0,5).map(l=>`
+      <tr>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold)">${l.code}</td>
+        <td>${l.taller}</td>
+        <td><span class="tag ${l.plan==='MASTER'?'t-mas':l.plan==='PRO'?'t-pro':'t-act'}">${l.plan}</span></td>
+        <td style="font-size:10px">${l.expira}</td>
+        <td><span class="tag ${l.estado==='ACTIVO'?'t-act':'t-exp'}">${l.estado}</span></td>
+      </tr>
+    `).join('');
+  }else{dashEmpty.style.display='block';dashBody.innerHTML='';}
+}
+function filterLics(){renderLics();}
+function deleteLic(i){if(!confirm('¿Eliminar esta licencia?'))return;const l=getLics();l.splice(i,1);saveLics(l);renderLics();updateDashboard();}
+function exportLicCSV(){
+  const lics=getLics();
+  let csv='Código,Taller,Tel,Plan,Módulos,$/Mes,Creada,Expira,Estado\n';
+  lics.forEach(l=>csv+=`${l.code},${l.taller},${l.tel||''},${l.plan},"${(l.mods||[]).join(';')}",${l.monthly||0},${l.creado},${l.expira},${l.estado}\n`);
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='DATESEG_Licencias_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// ═══ CLIENTES ═══
+function getClients(){return LS('clientes')||[];}
+function saveClients(c){LS('clientes',c);}
+function openNewClient(){document.getElementById('newClientForm').style.display='block';}
+function saveClient(){
+  const name=document.getElementById('ncName').value.trim();
+  if(!name){alert('Ingresa el nombre');return;}
+  const c={name,tel:document.getElementById('ncTel').value.trim(),email:document.getElementById('ncEmail').value.trim(),city:document.getElementById('ncCity').value.trim(),vehicles:document.getElementById('ncVehicles').value.trim(),notes:document.getElementById('ncNotes').value.trim(),date:new Date().toISOString().slice(0,10),plan:'—'};
+  // Check if has license
+  const lics=getLics();const lic=lics.find(l=>l.taller===name);
+  if(lic) c.plan=lic.plan;
+  const clients=getClients();clients.unshift(c);saveClients(clients);
+  document.getElementById('newClientForm').style.display='none';
+  renderClients();updateDashboard();
+  ['ncName','ncTel','ncEmail','ncCity','ncVehicles','ncNotes'].forEach(id=>document.getElementById(id).value='');
+}
+function renderClients(){
+  const clients=getClients();
+  const search=(document.getElementById('clientSearch')?.value||'').toLowerCase();
+  const filtered=clients.filter(c=>(c.name+c.tel+c.city).toLowerCase().includes(search));
+  document.getElementById('clientBody').innerHTML=filtered.map((c,i)=>`
+    <tr>
+      <td style="font-weight:600">${c.name}</td>
+      <td style="font-size:10px"><a href="https://wa.me/52${(c.tel||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">${c.tel||'—'}</a></td>
+      <td style="font-size:10px">${c.email||'—'}</td>
+      <td style="font-size:10px">${c.city||'—'}</td>
+      <td style="font-size:10px">${c.vehicles||'—'}</td>
+      <td><span class="tag ${c.plan==='MASTER'?'t-mas':c.plan==='PRO'?'t-pro':'t-act'}">${c.plan}</span></td>
+      <td style="font-size:10px;color:var(--txtD)">${c.date}</td>
+      <td><button class="btn btn-red" style="font-size:9px;padding:3px 8px" onclick="deleteClient(${i})">✕</button>
+        <button class="btn" style="font-size:9px;padding:3px 8px;margin-left:4px" onclick="window.open('https://wa.me/52'+'${(c.tel||'').replace(/\D/g,'')}')">📱</button></td>
+    </tr>
+  `).join('');
+}
+function filterClients(){renderClients();}
+function deleteClient(i){if(!confirm('¿Eliminar cliente?'))return;const c=getClients();c.splice(i,1);saveClients(c);renderClients();updateDashboard();}
+
+// ═══ DIAGRAMAS ═══
+function getDiagrams(){return LS('diagramas')||[];}
+function saveDiagrams(d){LS('diagramas',d);}
+function saveDiagram(){
+  const file=document.getElementById('dgFile').files[0];
+  if(!file){alert('Selecciona un archivo');return;}
+  const marca=document.getElementById('dgMarca').value;
+  const modelo=document.getElementById('dgModelo').value.trim();
+  const tipo=document.getElementById('dgTipo').value;
+  const notas=document.getElementById('dgNotas').value.trim();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const d={marca,modelo,tipo,notas,filename:file.name,size:file.size,date:new Date().toISOString().slice(0,10),data:e.target.result};
+    const diags=getDiagrams();diags.unshift(d);saveDiagrams(diags);
+    renderDiagrams();
+    document.getElementById('dgFile').value='';
+    document.getElementById('dgModelo').value='';
+    document.getElementById('dgNotas').value='';
+    alert('✅ Diagrama guardado: '+marca+' '+modelo);
+  };
+  reader.readAsDataURL(file);
+}
+function renderDiagrams(){
+  const diags=getDiagrams();
+  const container=document.getElementById('dgList');
+  if(!diags.length){container.innerHTML='<div style="text-align:center;padding:20px;color:var(--txtD);font-size:11px">Sin diagramas.</div>';return;}
+  container.innerHTML=diags.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(30,48,88,.4)">
+      <div style="font-size:24px">📐</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600">${d.marca} ${d.modelo}</div>
+        <div style="font-size:10px;color:var(--txtD)">${d.tipo} · ${d.filename} · ${d.date}</div>
+        ${d.notas?'<div style="font-size:9px;color:var(--cyan);margin-top:2px">'+d.notas+'</div>':''}
+      </div>
+      <button class="btn" style="font-size:9px;padding:4px 10px" onclick="viewDiagram(${i})">👁️ VER</button>
+      <button class="btn btn-red" style="font-size:9px;padding:4px 8px" onclick="deleteDiagram(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function viewDiagram(i){
+  const d=getDiagrams()[i];
+  if(!d) return;
+  document.getElementById('dgViewer').style.display='block';
+  document.getElementById('dgViewImg').src=d.data;
+}
+function deleteDiagram(i){if(!confirm('¿Eliminar diagrama?'))return;const d=getDiagrams();d.splice(i,1);saveDiagrams(d);renderDiagrams();}
+
+// ═══ APPS INVENTORY ═══
+const APPS_DATA=[
+  {name:'OilMaster V2',emoji:'🛡️',type:'included',desc:'Seguridad vial SOS'},
+  {name:'Design Studio V3',emoji:'🎨',type:'included',desc:'Editor gráfico'},
+  {name:'Academia ECU',emoji:'🔌',type:'included',desc:'9 módulos reparación'},
+  {name:'AprendeCode V3',emoji:'🎓',type:'included',desc:'Mentor programación'},
+  {name:'Generador Diagramas',emoji:'📐',type:'included',desc:'Excel → diagrama OEM'},
+  {name:'Manual ProPart',emoji:'📖',type:'included',desc:'Documentación'},
+  {name:'Refaccionaria Millán',emoji:'🏪',type:'separate',desc:'Catálogo partes'},
+  {name:'Módulo Grúas',emoji:'🚛',type:'separate',desc:'Próximamente'},
+  {name:'RedMed Publicidad',emoji:'📺',type:'separate',desc:'Panel anuncios'},
+];
+function renderApps(){
+  const inc=document.getElementById('appsIncluded');
+  const sep=document.getElementById('appsSeparate');
+  inc.innerHTML=APPS_DATA.filter(a=>a.type==='included').map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(30,48,88,.3)">
+      <span style="font-size:20px">${a.emoji}</span>
+      <div><div style="font-size:12px;font-weight:600">${a.name}</div><div style="font-size:10px;color:var(--txtD)">${a.desc}</div></div>
+    </div>
+  `).join('');
+  sep.innerHTML=APPS_DATA.filter(a=>a.type==='separate').map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(30,48,88,.3)">
+      <span style="font-size:20px">${a.emoji}</span>
+      <div><div style="font-size:12px;font-weight:600">${a.name}</div><div style="font-size:10px;color:var(--txtD)">${a.desc}</div></div>
+    </div>
+  `).join('');
+}
+
+// ═══ DASHBOARD UPDATE ═══
+function updateDashboard(){
+  const lics=getLics();
+  const clients=getClients();
+  const active=lics.filter(l=>l.estado==='ACTIVO');
+  const revenue=active.reduce((s,l)=>s+(l.monthly||0),0);
+  const meta=parseInt(document.getElementById('metaMensual')?.value)||50000;
+  const pct=Math.min(100,Math.round(revenue/meta*100));
+  const now=new Date();
+  const expiring=lics.filter(l=>{const d=new Date(l.expira);return d>now&&d<new Date(now.getTime()+30*86400000);}).length;
+
+  document.getElementById('totalClients').textContent=clients.length;
+  document.getElementById('totalActive').textContent=active.length;
+  document.getElementById('totalRevenue').textContent='$'+revenue.toLocaleString();
+  document.getElementById('totalExpired').textContent=expiring;
+  document.getElementById('metaBar').style.width=pct+'%';
+  document.getElementById('metaPct').textContent=pct+'% de meta';
+
+  // Sales by module
+  const chart=document.getElementById('salesChart');
+  const modCounts={PRO:0,MASTER:0,IMMO:0,DIESEL:0,FLASH:0,TUNER:0};
+  active.forEach(l=>{if(l.plan!=='BASICO')modCounts[l.plan]=(modCounts[l.plan]||0)+1;(l.mods||[]).forEach(m=>modCounts[m]=(modCounts[m]||0)+1);});
+  const colors={PRO:'var(--gold)',MASTER:'var(--purple)',IMMO:'var(--gold)',DIESEL:'var(--diesel)',FLASH:'var(--red)',TUNER:'var(--purple)'};
+  chart.innerHTML=Object.entries(modCounts).map(([k,v])=>`
+    <div style="flex:1;min-width:80px;background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+      <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:${colors[k]||'var(--txt)'}">${v}</div>
+      <div style="font-size:9px;color:var(--txtD)">${k}</div>
+    </div>
+  `).join('');
+}
+
+// ═══ FIREBASE SAVE ═══
+function saveFirebase(){
+  LS('firebase',{project:document.getElementById('fbProject').value,region:document.getElementById('fbRegion').value,bucket:document.getElementById('fbBucket').value});
+  alert('✅ Config Firebase guardada');
+}
+
+// ═══ INIT ═══
+loadCfg();
+renderLics();
+renderClients();
+renderDiagrams();
+renderApps();
+updateDashboard();
+</script>
+</body>
+</html>
