@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DATESEG MX — Ecosistema Completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050A12;--bg1:#0A1422;--bg2:#0F1C32;--bg3:#162444;
+  --bdr:#1E3058;--gold:#F5A623;--cyan:#00D4FF;--green:#00E676;
+  --red:#FF3D5A;--purple:#9C59F7;--orange:#FF7043;--diesel:#FF8C00;
+  --txt:#D0E4F5;--txtD:#6880A0;--txtM:#344870;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{text-align:center;padding:40px 20px 30px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan),var(--purple),var(--gold));background-size:300%;animation:bar 4s linear infinite}
+@keyframes bar{to{background-position:-300% 0}}
+.header h1{font-family:'Rajdhani',sans-serif;font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:4px;background:linear-gradient(135deg,var(--gold),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .sub{font-size:12px;color:var(--txtD);letter-spacing:3px;margin-top:4px}
+.header .tagline{font-size:14px;color:var(--txt);margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* SECTION */
+.section{max-width:1100px;margin:0 auto;padding:20px 16px}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.sec-title .icon{font-size:24px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--bdr),transparent);margin:30px auto;max-width:800px}
+
+/* ECOSYSTEM MAP */
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.eco-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.eco-card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.eco-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.eco-card.gold::before{background:linear-gradient(90deg,var(--gold),#C47008)}
+.eco-card.cyan::before{background:linear-gradient(90deg,var(--cyan),#0090B0)}
+.eco-card.green::before{background:linear-gradient(90deg,var(--green),#00A050)}
+.eco-card.purple::before{background:linear-gradient(90deg,var(--purple),#6B2FD4)}
+.eco-card.orange::before{background:linear-gradient(90deg,var(--orange),#D04020)}
+.eco-card.diesel::before{background:linear-gradient(90deg,var(--diesel),#CC6600)}
+.eco-card.red::before{background:linear-gradient(90deg,var(--red),#C4000E)}
+.eco-emoji{font-size:32px;margin-bottom:8px}
+.eco-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px}
+.eco-desc{font-size:11px;color:var(--txtD);margin-top:4px;line-height:1.5}
+.eco-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;margin-top:8px}
+.eco-tag.app{background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.3)}
+.eco-tag.mod{background:rgba(156,89,247,.12);color:var(--purple);border:1px solid rgba(156,89,247,.3)}
+.eco-tag.tool{background:rgba(0,212,255,.12);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.eco-tag.store{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.3)}
+
+/* PROPART TIERS */
+.tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.tier{background:var(--bg1);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;transition:transform .2s}
+.tier:hover{transform:translateY(-3px)}
+.tier-head{padding:20px;text-align:center;position:relative}
+.tier-head.free{background:linear-gradient(135deg,#0A1422,#162444)}
+.tier-head.pro{background:linear-gradient(135deg,#1A1000,#2A1800)}
+.tier-head.master{background:linear-gradient(135deg,#1A0A28,#0A0418)}
+.tier-emoji{font-size:36px;margin-bottom:6px}
+.tier-name{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:3px}
+.tier-head.free .tier-name{color:var(--cyan)}
+.tier-head.pro .tier-name{color:var(--gold)}
+.tier-head.master .tier-name{color:var(--purple)}
+.tier-price{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;margin-top:6px}
+.tier-price .period{font-size:12px;font-weight:400;color:var(--txtD)}
+.tier-body{padding:16px 20px 20px}
+.tier-item{font-size:12px;padding:6px 0;border-bottom:1px solid rgba(30,48,88,.5);display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+.tier-item:last-child{border:none}
+.tier-item .check{color:var(--green);font-weight:700;flex-shrink:0}
+.tier-item .lock{color:var(--txtM);flex-shrink:0}
+.tier-item.locked{color:var(--txtM)}
+
+/* MODULES */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.mod-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;transition:transform .2s}
+.mod-card:hover{transform:translateY(-3px)}
+.mod-head{padding:16px;text-align:center;border-bottom:1px solid var(--bdr)}
+.mod-head.immo{background:linear-gradient(135deg,rgba(245,166,35,.08),transparent)}
+.mod-head.diesel{background:linear-gradient(135deg,rgba(255,140,0,.08),transparent)}
+.mod-head.flash{background:linear-gradient(135deg,rgba(255,61,90,.08),transparent)}
+.mod-head.tuner{background:linear-gradient(135deg,rgba(156,89,247,.08),transparent)}
+.mod-emoji{font-size:34px}
+.mod-name{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;margin-top:4px}
+.mod-price{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;margin-top:4px}
+.mod-price .per{font-size:10px;color:var(--txtD);font-weight:400}
+.mod-body{padding:14px}
+.mod-feat{font-size:11px;padding:4px 0;color:var(--txt);display:flex;gap:6px;line-height:1.4}
+.mod-feat::before{content:'▸';color:var(--gold);font-weight:700;flex-shrink:0}
+
+/* PACKS */
+.pack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pack{background:var(--bg1);border:2px solid var(--bdr);border-radius:16px;padding:20px;text-align:center;position:relative;overflow:hidden;transition:all .2s}
+.pack:hover{transform:translateY(-3px)}
+.pack.featured{border-color:var(--gold);box-shadow:0 0 30px rgba(245,166,35,.15)}
+.pack-badge{position:absolute;top:12px;right:-30px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:3px 36px;transform:rotate(45deg);letter-spacing:1px}
+.pack-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;margin-bottom:4px}
+.pack-includes{font-size:10px;color:var(--txtD);margin-bottom:10px;line-height:1.6}
+.pack-price{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--gold)}
+.pack-was{font-size:12px;color:var(--txtM);text-decoration:line-through;margin-top:2px}
+.pack-save{display:inline-block;background:rgba(0,230,118,.12);color:var(--green);font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;margin-top:6px}
+
+/* OTHER TOOLS */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tool-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center;transition:all .2s}
+.tool-card:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.tool-emoji{font-size:28px}
+.tool-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;margin-top:4px}
+.tool-desc{font-size:10px;color:var(--txtD);margin-top:2px}
+.tool-tag{font-size:8px;font-weight:700;letter-spacing:1px;margin-top:6px;padding:2px 8px;border-radius:10px;display:inline-block}
+.tool-tag.free{background:rgba(0,230,118,.1);color:var(--green)}
+.tool-tag.inc{background:rgba(0,212,255,.1);color:var(--cyan)}
+
+/* CHARDS */
+.chards-section{background:linear-gradient(135deg,rgba(245,166,35,.04),rgba(156,89,247,.04));border:1px solid rgba(245,166,35,.15);border-radius:16px;padding:24px;margin-top:20px}
+.chards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.chards-level{background:var(--bg1);border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center}
+.chards-level h4{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px}
+.chards-level p{font-size:10px;color:var(--txtD);margin-top:4px;line-height:1.5}
+
+/* CONTACT BAR */
+.contact-bar{background:var(--bg1);border:1px solid var(--bdr);border-radius:14px;padding:20px;text-align:center;margin-top:30px}
+.contact-bar h3{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--gold);letter-spacing:2px}
+.contact-nums{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.contact-btn{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:10px 20px;font-size:12px;font-weight:600;color:var(--green);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.contact-btn:hover{background:rgba(0,230,118,.1);border-color:var(--green)}
+
+/* FOOTER */
+.footer{text-align:center;padding:30px 20px;font-size:10px;color:var(--txtM);letter-spacing:1px}
+
+@media(max-width:600px){
+  .tier-grid,.mod-grid,.pack-grid{grid-template-columns:1fr}
+  .eco-grid{grid-template-columns:1fr 1fr}
+  .section{padding:16px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <h1>⬡ DATESEG MX</h1>
+  <div class="sub">SISTEMA DE TECNOLOGÍAS AUTOMOTRICES</div>
+  <div class="tagline">Ecosistema completo de herramientas para el técnico automotriz mexicano.<br>Cada quien arma su paquete de acuerdo a sus necesidades.</div>
+</div>
+
+<!-- ═══ MAPA DEL ECOSISTEMA ═══ -->
+<div class="section">
+  <div class="sec-title"><span class="icon">🗺️</span> ECOSISTEMA DATESEG</div>
+  <div class="eco-grid">
+    <div class="eco-card gold">
+      <div class="eco-emoji">🔧</div>
+      <div class="eco-name">ProPart System</div>
+      <div class="eco-desc">Diagnóstico OBD2/BLE profesional. DTCs, sensores en vivo, gráficas, pinouts OEM, Chards IA. 3 niveles: Básico, Pro, Master.</div>
+      <span class="eco-tag app">APP PRINCIPAL</span>
+    </div>
+    <div class="eco-card purple">
+      <div class="eco-emoji">🔑</div>
+      <div class="eco-name">IMMO & Llaves</div>
+      <div class="eco-desc">Programación transponders, hermanado de módulos, Incode/Outcode Ford/Mazda, base de llaves por marca.</div>
+      <span class="eco-tag mod">MÓDULO $499/mes</span>
+    </div>
+    <div class="eco-card diesel">
+      <div class="eco-emoji">🛢️</div>
+      <div class="eco-name">Diesel PRO</div>
+      <div class="eco-desc">EGR, inyectores Common Rail, DPF/FAP, turbo VGT, AdBlue/Urea, bujías precalentamiento. Bidireccional incluido.</div>
+      <span class="eco-tag mod">MÓDULO $599/mes</span>
+    </div>
+    <div class="eco-card red">
+      <div class="eco-emoji">⚡</div>
+      <div class="eco-name">Flash ECU</div>
+      <div class="eco-desc">Reprogramación de computadoras, archivos BIN, Seed-Key PULSAR Cloud, lectura/escritura de memorias.</div>
+      <span class="eco-tag mod">MÓDULO $699/mes</span>
+    </div>
+    <div class="eco-card orange">
+      <div class="eco-emoji">🏎️</div>
+      <div class="eco-name">HP Tuners / Remapeo</div>
+      <div class="eco-desc">Tablas de inyección y encendido, remapeo de torque, calibración de turbos, desactivación de inmovilizador para competición.</div>
+      <span class="eco-tag mod">MÓDULO $799/mes</span>
+    </div>
+    <div class="eco-card cyan">
+      <div class="eco-emoji">🔮</div>
+      <div class="eco-name">PULSAR Predictivo</div>
+      <div class="eco-desc">IA que detecta patrones antes de que ocurra la falla. Historial VIN, alertas preventivas, costo estimado.</div>
+      <span class="eco-tag app">INCLUIDO EN MASTER</span>
+    </div>
+    <div class="eco-card green">
+      <div class="eco-emoji">🛡️</div>
+      <div class="eco-name">OilMaster</div>
+      <div class="eco-desc">App de seguridad vial: SOS, semáforo de auxilio, directorio de grúas, beacon/strobe, notificaciones en vivo.</div>
+      <span class="eco-tag tool">HERRAMIENTA GRATIS</span>
+    </div>
+    <div class="eco-card cyan">
+      <div class="eco-emoji">📐</div>
+      <div class="eco-name">Generador Diagramas</div>
+      <div class="eco-desc">Sube imagen o Excel → genera diagrama de cableado con colores OEM. Simulador de desarmado componentes.</div>
+      <span class="eco-tag tool">HERRAMIENTA INCLUIDA</span>
+    </div>
+    <div class="eco-card green">
+      <div class="eco-emoji">🏪</div>
+      <div class="eco-name">Refaccionaria Millán</div>
+      <div class="eco-desc">Catálogo de partes eléctricas, búsqueda por voz, escáner de código de barras, inventario con SQLite.</div>
+      <span class="eco-tag store">TIENDA EN LÍNEA</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ PROPART — 3 NIVELES ═══ -->
+<div class="section">
+  <div class="sec-title"><span class="icon">🔧</span> PROPART SYSTEM — 3 NIVELES</div>
+  <div class="tier-grid">
+
+    <!-- BÁSICO -->
+    <div class="tier">
+      <div class="tier-head free">
+        <div class="tier-emoji">🆓</div>
+        <div class="tier-name">BÁSICO</div>
+        <div class="tier-price" style="color:var(--green)">GRATIS <span class="period">para siempre</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-item"><span class="check">✓</span> DTCs básicos (50 más comunes)</div>
+        <div class="tier-item"><span class="check">✓</span> 1 gráfica en vivo</div>
+        <div class="tier-item"><span class="check">✓</span> Pinout de 5 vehículos populares</div>
+        <div class="tier-item"><span class="check">✓</span> Reparación ECU: corriente y tierra</div>
+        <div class="tier-item"><span class="check">✓</span> 1 diagrama de cableado</div>
+        <div class="tier-item"><span class="check">✓</span> Academia ECU (módulos básicos)</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin Chards IA</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin bidireccional</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin sensores en vivo completos</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin soporte WhatsApp</div>
+      </div>
+    </div>
+
+    <!-- PRO -->
+    <div class="tier" style="border-color:rgba(245,166,35,.3)">
+      <div class="tier-head pro">
+        <div class="tier-emoji">⭐</div>
+        <div class="tier-name">PRO</div>
+        <div class="tier-price" style="color:var(--gold)">$599 <span class="period">MXN/mes</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-item"><span class="check">✓</span> <b>Todo lo Básico +</b></div>
+        <div class="tier-item"><span class="check">✓</span> DTCs completos todas las marcas</div>
+        <div class="tier-item"><span class="check">✓</span> 4 gráficas simultáneas</div>
+        <div class="tier-item"><span class="check">✓</span> Todos los pinouts y diagramas</div>
+        <div class="tier-item"><span class="check">✓</span> Sensores en vivo completos</div>
+        <div class="tier-item"><span class="check">✓</span> Calibración cuerpo acelerador</div>
+        <div class="tier-item"><span class="check">✓</span> Reparación ECU completa</div>
+        <div class="tier-item"><span class="check">✓</span> Chards LIMITADO (DTCs y sensores, sin plática libre)</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin bidireccional (en módulos)</div>
+        <div class="tier-item locked"><span class="lock">🔒</span> Sin PULSAR Predictivo</div>
+      </div>
+    </div>
+
+    <!-- MASTER -->
+    <div class="tier" style="border-color:rgba(156,89,247,.3)">
+      <div class="tier-head master">
+        <div class="tier-emoji">👑</div>
+        <div class="tier-name">MASTER</div>
+        <div class="tier-price" style="color:var(--purple)">$999 <span class="period">MXN/mes</span></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-item"><span class="check">✓</span> <b>Todo lo PRO +</b></div>
+        <div class="tier-item"><span class="check">✓</span> Bidireccional completo</div>
+        <div class="tier-item"><span class="check">✓</span> Archivos BIN (lectura)</div>
+        <div class="tier-item"><span class="check">✓</span> PULSAR Predictivo</div>
+        <div class="tier-item"><span class="check">✓</span> Todas las gráficas + todos los sensores</div>
+        <div class="tier-item"><span class="check">✓</span> Historial VIN ilimitado</div>
+        <div class="tier-item"><span class="check">✓</span> 🤖 <b>Chards COMPLETO</b> — plática libre, cámara, diagnóstico narrado</div>
+        <div class="tier-item"><span class="check">✓</span> Soporte WhatsApp 24/7</div>
+        <div class="tier-item"><span class="check">✓</span> Generador de diagramas ilimitado</div>
+        <div class="tier-item"><span class="check">✓</span> Design Studio incluido</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ 4 MÓDULOS INDEPENDIENTES ═══ -->
+<div class="section">
+  <div class="sec-title"><span class="icon">🧩</span> MÓDULOS INDEPENDIENTES — Arma tu paquete</div>
+  <p style="font-size:12px;color:var(--txtD);margin-bottom:16px;line-height:1.6">Cada módulo se compra por separado. Combínalos como quieras o lleva un pack con descuento. Todos incluyen Chards limitado para consultas del módulo.</p>
+
+  <div class="mod-grid">
+    <!-- IMMO -->
+    <div class="mod-card">
+      <div class="mod-head immo">
+        <div class="mod-emoji">🔑</div>
+        <div class="mod-name" style="color:var(--gold)">IMMO & LLAVES</div>
+        <div class="mod-price" style="color:var(--gold)">$499 <span class="per">MXN/mes</span></div>
+      </div>
+      <div class="mod-body">
+        <div class="mod-feat">Programación de transponders (ID13-ID8A)</div>
+        <div class="mod-feat">Hermanado de módulos BCM/ECU</div>
+        <div class="mod-feat">Incode/Outcode Ford, Mazda</div>
+        <div class="mod-feat">Base de datos de llaves por marca</div>
+        <div class="mod-feat">Guías paso a paso con fotos</div>
+        <div class="mod-feat">Chards LIMITADO (consultas IMMO)</div>
+      </div>
+    </div>
+    <!-- DIESEL -->
+    <div class="mod-card">
+      <div class="mod-head diesel">
+        <div class="mod-emoji">🛢️</div>
+        <div class="mod-name" style="color:var(--diesel)">DIESEL PRO</div>
+        <div class="mod-price" style="color:var(--diesel)">$599 <span class="per">MXN/mes</span></div>
+      </div>
+      <div class="mod-body">
+        <div class="mod-feat">8 sistemas: EGR, DPF, Common Rail, turbo VGT, AdBlue, bujías precal., flaps swirl, riel presión</div>
+        <div class="mod-feat">Bidireccional diesel</div>
+        <div class="mod-feat">Tablas de valores por motor</div>
+        <div class="mod-feat">Procedimientos paso a paso</div>
+        <div class="mod-feat">DTCs diesel completos</div>
+        <div class="mod-feat">Chards LIMITADO (consultas diesel)</div>
+      </div>
+    </div>
+    <!-- FLASH ECU -->
+    <div class="mod-card">
+      <div class="mod-head flash">
+        <div class="mod-emoji">⚡</div>
+        <div class="mod-name" style="color:var(--red)">FLASH ECU</div>
+        <div class="mod-price" style="color:var(--red)">$699 <span class="per">MXN/mes</span></div>
+      </div>
+      <div class="mod-body">
+        <div class="mod-feat">Lectura/escritura archivos BIN</div>
+        <div class="mod-feat">Seed-Key vía PULSAR Cloud</div>
+        <div class="mod-feat">Reprogramación ECU completa</div>
+        <div class="mod-feat">Soporte Bosch, Denso, Continental</div>
+        <div class="mod-feat">Clonado de computadoras</div>
+        <div class="mod-feat">Chards LIMITADO (consultas flash)</div>
+      </div>
+    </div>
+    <!-- HP TUNERS -->
+    <div class="mod-card">
+      <div class="mod-head tuner">
+        <div class="mod-emoji">🏎️</div>
+        <div class="mod-name" style="color:var(--purple)">HP TUNERS</div>
+        <div class="mod-price" style="color:var(--purple)">$799 <span class="per">MXN/mes</span></div>
+      </div>
+      <div class="mod-body">
+        <div class="mod-feat">Tablas inyección y encendido</div>
+        <div class="mod-feat">Remapeo de torque y boost</div>
+        <div class="mod-feat">Calibración de turbos</div>
+        <div class="mod-feat">Mapas A/F ratio personalizados</div>
+        <div class="mod-feat">Export/import calibraciones</div>
+        <div class="mod-feat">Chards LIMITADO (consultas tuning)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ PACKS CON DESCUENTO ═══ -->
+<div class="section">
+  <div class="sec-title"><span class="icon">🎁</span> PACKS — Arma el tuyo o elige uno</div>
+  <p style="font-size:12px;color:var(--txtD);margin-bottom:16px;line-height:1.6">Los precios son por módulos combinados. El nivel de ProPart (Básico/Pro/Master) se paga aparte. Contacta por WhatsApp para armar tu pack personalizado.</p>
+
+  <div class="pack-grid">
+    <div class="pack">
+      <div class="pack-name" style="color:var(--cyan)">PACK 2 MÓDULOS</div>
+      <div class="pack-includes">Elige cualquier combinación de 2 módulos</div>
+      <div class="pack-price">$899/mes</div>
+      <div class="pack-was">Precio normal: hasta $1,098 - $1,498</div>
+      <div class="pack-save">AHORRAS hasta $599</div>
+    </div>
+
+    <div class="pack featured">
+      <div class="pack-badge">POPULAR</div>
+      <div class="pack-name" style="color:var(--gold)">PACK 3 MÓDULOS</div>
+      <div class="pack-includes">Elige cualquier combinación de 3 módulos</div>
+      <div class="pack-price">$1,299/mes</div>
+      <div class="pack-was">Precio normal: hasta $1,797 - $2,097</div>
+      <div class="pack-save">AHORRAS hasta $798</div>
+    </div>
+
+    <div class="pack" style="border-color:rgba(156,89,247,.3)">
+      <div class="pack-name" style="color:var(--purple)">PACK TOTAL</div>
+      <div class="pack-includes">Los 4 módulos + ProPart Master incluido</div>
+      <div class="pack-price">$1,999/mes</div>
+      <div class="pack-was">Precio normal: $3,595</div>
+      <div class="pack-save">AHORRAS $1,596 — ¡44% OFF!</div>
+    </div>
+
+    <div class="pack" style="border-color:rgba(0,230,118,.3)">
+      <div class="pack-badge" style="background:var(--green)">LANZAMIENTO</div>
+      <div class="pack-name" style="color:var(--green)">PACK ANUAL TOTAL</div>
+      <div class="pack-includes">Los 4 módulos + Master · Compromiso 12 meses</div>
+      <div class="pack-price">$1,499/mes</div>
+      <div class="pack-was">Precio normal: $3,595/mes</div>
+      <div class="pack-save">AHORRAS $25,152 AL AÑO — ¡58% OFF!</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ CHARDS IA — NIVELES ═══ -->
+<div class="section">
+  <div class="chards-section">
+    <div class="sec-title" style="margin-bottom:8px"><span class="icon">🤖</span> CHARDS IA — Asistente Inteligente</div>
+    <p style="font-size:11px;color:var(--txtD);line-height:1.6">Chards se adapta al nivel del usuario. Desde consultas básicas hasta diagnóstico narrado con cámara.</p>
+    <div class="chards-grid">
+      <div class="chards-level" style="border-color:var(--txtM)">
+        <h4 style="color:var(--txtM)">🚫 BÁSICO</h4>
+        <p>Sin acceso a Chards.<br>El usuario usa la app manualmente.</p>
+      </div>
+      <div class="chards-level" style="border-color:rgba(245,166,35,.3)">
+        <h4 style="color:var(--gold)">⭐ PRO + MÓDULOS</h4>
+        <p>Chards LIMITADO: responde consultas de DTCs, sensores, cables y funciones del módulo comprado. Respuestas cortas, sin plática libre.</p>
+      </div>
+      <div class="chards-level" style="border-color:rgba(156,89,247,.3)">
+        <h4 style="color:var(--purple)">👑 MASTER / PACK TOTAL</h4>
+        <p>Chards COMPLETO: plática libre, cámara Visualizer, diagnóstico narrado, voz, análisis en tiempo real. El asistente completo.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ HERRAMIENTAS INCLUIDAS ═══ -->
+<div class="section">
+  <div class="sec-title"><span class="icon">🧰</span> HERRAMIENTAS DEL ECOSISTEMA DATESEG</div>
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-emoji">🛡️</div>
+      <div class="tool-name">OilMaster V2</div>
+      <div class="tool-desc">Seguridad vial, SOS, grúas, beacon</div>
+      <span class="tool-tag free">GRATIS</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-emoji">🎨</div>
+      <div class="tool-name">Design Studio</div>
+      <div class="tool-desc">Editor gráfico publicitario</div>
+      <span class="tool-tag inc">INCLUIDO EN MASTER</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-emoji">📐</div>
+      <div class="tool-name">Generador Diagramas</div>
+      <div class="tool-desc">Excel → diagrama con colores OEM</div>
+      <span class="tool-tag inc">INCLUIDO EN PRO+</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-emoji">🎓</div>
+      <div class="tool-name">AprendeCode V3</div>
+      <div class="tool-desc">Aprende a programar con IA</div>
+      <span class="tool-tag free">GRATIS</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-emoji">🔌</div>
+      <div class="tool-name">Academia ECU</div>
+      <div class="tool-desc">9 módulos reparación ECU</div>
+      <span class="tool-tag free">BÁSICOS GRATIS</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-emoji">🏪</div>
+      <div class="tool-name">Refaccionaria Millán</div>
+      <div class="tool-desc">Catálogo partes eléctricas + envíos</div>
+      <span class="tool-tag store">TIENDA</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTACTO ═══ -->
+<div class="section">
+  <div class="contact-bar">
+    <h3>📱 ARMA TU PAQUETE — CONTACTA POR WHATSAPP</h3>
+    <p style="font-size:11px;color:var(--txtD);margin:8px 0 14px">Dinos qué módulos necesitas y te armamos un precio personalizado. Descuentos por lanzamiento disponibles.</p>
+    <div class="contact-nums">
+      <a class="contact-btn" href="https://wa.me/527776838196?text=Hola,%20me%20interesa%20armar%20mi%20paquete%20ProPart" target="_blank">📱 777-683-8196</a>
+      <a class="contact-btn" href="https://wa.me/522219567392?text=Hola,%20me%20interesa%20armar%20mi%20paquete%20ProPart" target="_blank">📱 221-956-7392</a>
+      <a class="contact-btn" href="mailto:FM095329@gmail.com" style="color:var(--cyan)">📧 FM095329@gmail.com</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  ⬡ DATESEG MX — Sistema de Tecnologías Automotrices<br>
+  Fernando Millán Melchor · Alpuyeca, Xochitepec, Morelos · 2026<br>
+  <span style="color:var(--gold)">dateseg.mx</span>
+</div>
+
+</body>
+</html>

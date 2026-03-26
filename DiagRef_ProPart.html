@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProPart — Referencia Rápida de Sensores</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0e13;
+    --card: #13161d;
+    --card-hover: #1a1e28;
+    --border: #252a36;
+    --accent: #00e676;
+    --accent-dim: #00e67622;
+    --warn: #ff9100;
+    --danger: #ff5252;
+    --text: #e8eaf0;
+    --text-dim: #7a8194;
+    --dtc: #64b5f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === HEADER === */
+  .header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60%; left: -10%;
+    width: 120%; height: 200%;
+    background: radial-gradient(ellipse at 30% 0%, #00e67610 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .logo-mark {
+    width: 38px; height: 38px;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 14px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    flex-shrink: 0;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .header h1 span { color: var(--accent); }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    position: relative;
+  }
+
+  /* === SEARCH === */
+  .search-bar {
+    padding: 12px 24px 16px;
+    position: sticky; top: 0;
+    background: var(--bg);
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px 12px 42px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-wrap {
+    position: relative;
+  }
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .result-count {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* === CARDS === */
+  .cards {
+    padding: 16px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sensor-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all .25s ease;
+    cursor: pointer;
+    animation: slideUp .4s ease backwards;
+  }
+  .sensor-card:nth-child(1) { animation-delay: .05s; }
+  .sensor-card:nth-child(2) { animation-delay: .1s; }
+  .sensor-card:nth-child(3) { animation-delay: .15s; }
+  .sensor-card:nth-child(4) { animation-delay: .2s; }
+  .sensor-card:nth-child(5) { animation-delay: .25s; }
+  .sensor-card:nth-child(6) { animation-delay: .3s; }
+  .sensor-card:nth-child(7) { animation-delay: .35s; }
+  .sensor-card:nth-child(8) { animation-delay: .4s; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .sensor-card:hover, .sensor-card.open {
+    border-color: var(--accent);
+    background: var(--card-hover);
+  }
+
+  .card-main {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: var(--accent-dim);
+    border: 1px solid #00e67633;
+  }
+
+  .card-info { flex: 1; min-width: 0; }
+  .card-name {
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .card-spec {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .card-dtc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dtc);
+    background: #64b5f612;
+    border: 1px solid #64b5f633;
+    padding: 4px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  .card-expand {
+    color: var(--text-dim);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: transform .3s;
+    margin-left: 4px;
+  }
+  .sensor-card.open .card-expand { transform: rotate(180deg); }
+
+  /* === DETAIL PANEL === */
+  .card-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease;
+  }
+  .sensor-card.open .card-detail {
+    max-height: 300px;
+  }
+
+  .detail-inner {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .vacuna-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--warn);
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vacuna-label::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--warn);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .vacuna-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  /* === FOOTER BAR === */
+  .footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, var(--bg) 30%);
+    padding: 40px 24px 20px;
+    text-align: center;
+  }
+  .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .footer-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
+  /* === HIDDEN STATE === */
+  .sensor-card.hidden {
+    display: none;
+  }
+
+  /* === RESPONSIVE === */
+  @media (min-width: 600px) {
+    .cards { max-width: 560px; margin: 0 auto; }
+    .header, .search-bar { max-width: 560px; margin-left: auto; margin-right: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-mark">PP</div>
+    <h1>Diag<span>Ref</span> — Sensores &amp; Actuadores</h1>
+  </div>
+  <div class="subtitle">ProPart System · Referencia rápida de taller</div>
+</div>
+
+<div class="search-bar">
+  <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="Buscar sensor, DTC o síntoma…" id="searchInput">
+  </div>
+  <div class="result-count" id="resultCount">8 componentes</div>
+</div>
+
+<div class="cards" id="cardsContainer"></div>
+
+<div class="footer">
+  <div class="footer-badge">
+    <span class="dot"></span>
+    DATESEG MX · ProPart V8
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    name: "IAC / ISC",
+    icon: "🌀",
+    spec: "20 – 40 Ω (Bobinas)",
+    dtc: "P0505",
+    vacuna: "Si el ralentí oscila, limpiar antes de cambiar. Revisar que el asiento del pintle no tenga carbón acumulado."
+  },
+  {
+    name: "Sensor Knock",
+    icon: "📡",
+    spec: "1.5V – 3.0V (Pico)",
+    dtc: "P0325",
+    vacuna: "No sobre-apretar; el torque afecta la frecuencia de resonancia. Usar torquímetro según spec del fabricante."
+  },
+  {
+    name: "FRP (Presión de Riel)",
+    icon: "⛽",
+    spec: "0.5V (0 bar) – 4.5V (Max)",
+    dtc: "P0087",
+    vacuna: "Si marca 4.8V constante, el sensor está abierto. Verificar voltaje de referencia de 5V en el conector."
+  },
+  {
+    name: "VVT (Solenoide)",
+    icon: "⚙️",
+    spec: "7.0 – 12.0 Ω",
+    dtc: "P0011",
+    vacuna: "Aceite sucio tapa el cedazo del solenoide. Antes de reemplazar, limpiar con solvente y verificar flujo."
+  },
+  {
+    name: "EVAP (Válv. Purga)",
+    icon: "💨",
+    spec: "22 – 35 Ω",
+    dtc: "P0443",
+    vacuna: "Si se queda abierta, el carro tarda en arrancar por exceso de vapores. Verificar con vacuómetro."
+  },
+  {
+    name: "Inyectores",
+    icon: "🔥",
+    spec: "12 – 16 Ω (Fríos)",
+    dtc: "P020X",
+    vacuna: "El pico de inducción debe ser >60V. Un pico bajo indica bobina interna dañada o corto entre espiras."
+  },
+  {
+    name: "Bobinas COP",
+    icon: "⚡",
+    spec: "0.6 – 1.5 Ω (Primaria)",
+    dtc: "P035X",
+    vacuna: "Medir tiempo de quemado (dwell) mínimo 1.5ms. Si es menor, la bobina no satura y la chispa es débil."
+  },
+  {
+    name: "VSS (Velocidad)",
+    icon: "🏎️",
+    spec: "0 – 5V (Digital) / AC (Ind.)",
+    dtc: "P0500",
+    vacuna: "Si la aguja del velocímetro salta, es ruido eléctrico en el cable blindado. Verificar tierra del blindaje."
+  }
+];
+
+const container = document.getElementById('cardsContainer');
+const searchInput = document.getElementById('searchInput');
+const resultCount = document.getElementById('resultCount');
+
+function renderCards() {
+  container.innerHTML = DATA.map((item, i) => `
+    <div class="sensor-card" data-index="${i}" onclick="toggleCard(this)">
+      <div class="card-main">
+        <div class="card-icon">${item.icon}</div>
+        <div class="card-info">
+          <div class="card-name">${item.name}</div>
+          <div class="card-spec">${item.spec}</div>
+        </div>
+        <div class="card-dtc">${item.dtc}</div>
+        <div class="card-expand">▾</div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-inner">
+          <div class="vacuna-label">Vacuna Técnica</div>
+          <div class="vacuna-text">${item.vacuna}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCard(el) {
+  el.classList.toggle('open');
+}
+
+function filterCards(query) {
+  const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const cards = container.querySelectorAll('.sensor-card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    const idx = card.dataset.index;
+    const item = DATA[idx];
+    const haystack = `${item.name} ${item.spec} ${item.dtc} ${item.vacuna}`
+      .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    if (haystack.includes(q)) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  resultCount.textContent = visible === DATA.length
+    ? `${visible} componentes`
+    : `${visible} de ${DATA.length} componentes`;
+}
+
+searchInput.addEventListener('input', (e) => filterCards(e.target.value));
+
+renderCards();
+</script>
+</body>
+</html>
